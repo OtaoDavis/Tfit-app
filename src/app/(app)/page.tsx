@@ -1,56 +1,69 @@
-import { PillarCard } from '@/components/home/pillar-card';
-import { PageHeader } from '@/components/common/page-header';
-import { Brain, Apple, Dumbbell, Users } from 'lucide-react';
+import { PillarGridItem } from '@/components/home/pillar-grid-item';
+import { Brain, Apple, Dumbbell, ClipboardList, CheckCircle2, Scale } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+
+interface Pillar {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+}
 
 export default function HomePage() {
-  const pillars = [
+  const pillars: Pillar[] = [
     {
       title: 'Mindset',
-      description: 'Cultivate a positive and resilient mindset for overall well-being.',
       icon: Brain,
-      href: '#', // Placeholder, can link to specific content later
-      imageHint: 'mindfulness meditation'
+      href: '#', // Placeholder
     },
     {
       title: 'Nutrition',
-      description: 'Fuel your body with wholesome foods. Explore meal plans and track your intake.',
       icon: Apple,
       href: '/nutrition',
-      imageHint: 'healthy food'
     },
     {
-      title: 'Movement',
-      description: 'Stay active with diverse workouts. Find routines that fit your lifestyle.',
+      title: 'Fitness',
       icon: Dumbbell,
       href: '#', // Placeholder
-      imageHint: 'fitness exercise'
     },
     {
-      title: 'Community',
-      description: 'Connect with like-minded individuals. Share your journey and find support.',
-      icon: Users,
-      href: '/community',
-      imageHint: 'people community'
+      title: 'Habits',
+      icon: ClipboardList,
+      href: '#', // Placeholder
+    },
+    {
+      title: 'Consistency',
+      icon: CheckCircle2,
+      href: '#', // Placeholder
+    },
+    {
+      title: 'Balance',
+      icon: Scale,
+      href: '#', // Placeholder
     },
   ];
 
   return (
-    <div className="container mx-auto">
-      <PageHeader
-        title="Welcome to The Treasured Collective"
-        description="Your comprehensive platform for a healthier, happier you. Explore our core pillars."
-      />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="container mx-auto py-8 flex flex-col items-center text-center">
+      <h2 className="text-sm uppercase text-muted-foreground tracking-widest mb-1">
+        The
+      </h2>
+      <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-2">
+        Treasured Collective
+      </h1>
+      <p className="text-lg text-foreground mb-4">
+        by Coach Roseanne
+      </p>
+      <p className="text-md text-muted-foreground max-w-md mb-10">
+        You have one life, you have one body&mdash;so treasure it.
+      </p>
+
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6 w-full max-w-2xl">
         {pillars.map((pillar) => (
-          <PillarCard
+          <PillarGridItem
             key={pillar.title}
             title={pillar.title}
-            description={pillar.description}
             icon={pillar.icon}
             href={pillar.href}
-            imageSrc={`https://picsum.photos/seed/${pillar.title.toLowerCase()}/400/300`}
-            imageAlt={`${pillar.title} pillar image`}
-            imageHint={pillar.imageHint}
           />
         ))}
       </div>
