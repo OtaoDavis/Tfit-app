@@ -37,7 +37,7 @@ export default function HomePage() {
   return (
     <div className="container mx-auto">
       <PageHeader
-        title="Welcome to FitLife Hub"
+        title="Welcome to The Treasured Collective"
         description="Your comprehensive platform for a healthier, happier you. Explore our core pillars."
       />
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
