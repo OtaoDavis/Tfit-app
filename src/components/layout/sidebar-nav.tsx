@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar, // Import useSidebar
 } from '@/components/ui/sidebar';
 
 interface SidebarNavProps {
@@ -16,10 +17,17 @@ interface SidebarNavProps {
 
 export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar(); // Get sidebar context
 
   if (!items?.length) {
     return null;
   }
+
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false); // Close sidebar on mobile
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -58,7 +66,7 @@ export function SidebarNav({ items }: SidebarNavProps) {
 
         return (
           <SidebarMenuItem key={index}>
-            <Link href={item.href} passHref legacyBehavior>
+            <Link href={item.href} passHref legacyBehavior onClick={handleLinkClick}>
               <SidebarMenuButton
                 variant="default"
                 size="default"
