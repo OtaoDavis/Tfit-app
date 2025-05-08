@@ -11,7 +11,7 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: 'FitLife Hub',
+  title: 'The Treasured Collective',
   description: 'Your personal fitness companion for mindset, nutrition, movement, and community.',
 };
 

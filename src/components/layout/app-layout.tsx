@@ -29,7 +29,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <Link href="/" className="flex items-center gap-2">
             <HeartPulse className="h-8 w-8 text-primary" />
             <h1 className="text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
-              FitLife Hub
+              The Treasured Collective
             </h1>
           </Link>
         </SidebarHeader>

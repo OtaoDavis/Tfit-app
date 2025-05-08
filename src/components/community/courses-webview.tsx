@@ -10,13 +10,13 @@ interface CoursesWebViewProps {
 
 export function CoursesWebView({ src }: CoursesWebViewProps) {
   const [isLoading, setIsLoading] = useState(true);
-  const [isOnline, setIsOnline] = useState(true); // Assume online initially
-  const [iframeKey, setIframeKey] = useState(Date.now()); // To force iframe reload
+  const [isOnline, setIsOnline] = useState(true);
+  const [iframeKey, setIframeKey] = useState(Date.now()); 
 
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
-      setIframeKey(Date.now()); // Force reload iframe when back online
+      setIframeKey(Date.now()); 
     };
     const handleOffline = () => setIsOnline(false);
 
@@ -45,7 +45,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
         <CardTitle>Our Courses</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="relative aspect-video w-full min-h-[500px] bg-muted">
+        <div className="relative w-full min-h-[500px] bg-muted"> 
           {isLoading && isOnline && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/80 z-10">
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />

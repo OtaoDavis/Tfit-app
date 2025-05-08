@@ -1,56 +1,65 @@
-import { PillarCard } from '@/components/home/pillar-card';
-import { PageHeader } from '@/components/common/page-header';
-import { Brain, Apple, Dumbbell, Users } from 'lucide-react';
+import { PillarGridItem } from '@/components/home/pillar-grid-item';
+import { Brain, Apple, Dumbbell, Users } from 'lucide-react'; // Added Users, removed ClipboardList, CheckCircle2, Scale
+import type { LucideIcon } from 'lucide-react';
+
+interface Pillar {
+  title: string;
+  icon: LucideIcon;
+  href: string;
+  description: string; // Added description
+}
 
 export default function HomePage() {
-  const pillars = [
+  const pillars: Pillar[] = [
     {
       title: 'Mindset',
-      description: 'Cultivate a positive and resilient mindset for overall well-being.',
       icon: Brain,
-      href: '#', // Placeholder, can link to specific content later
-      imageHint: 'mindfulness meditation'
+      href: '/#', // Placeholder
+      description: 'Cultivate a resilient and positive mindset for lasting change.',
     },
     {
       title: 'Nutrition',
-      description: 'Fuel your body with wholesome foods. Explore meal plans and track your intake.',
       icon: Apple,
       href: '/nutrition',
-      imageHint: 'healthy food'
+      description: 'Fuel your body with mindful, nourishing food choices.',
     },
     {
       title: 'Movement',
-      description: 'Stay active with diverse workouts. Find routines that fit your lifestyle.',
       icon: Dumbbell,
-      href: '#', // Placeholder
-      imageHint: 'fitness exercise'
+      href: '/#', // Placeholder
+      description: 'Discover enjoyable activities that energize and strengthen you.',
     },
     {
       title: 'Community',
-      description: 'Connect with like-minded individuals. Share your journey and find support.',
       icon: Users,
       href: '/community',
-      imageHint: 'people community'
+      description: 'Connect, share, and grow with our supportive wellness family.',
     },
   ];
 
   return (
-    <div className="container mx-auto">
-      <PageHeader
-        title="Welcome to FitLife Hub"
-        description="Your comprehensive platform for a healthier, happier you. Explore our core pillars."
-      />
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="container mx-auto py-8 flex flex-col items-center text-center">
+      <h2 className="text-sm uppercase text-muted-foreground tracking-widest mb-1">
+        The
+      </h2>
+      <h1 className="text-4xl sm:text-5xl font-bold text-primary mb-2">
+        Treasured Collective
+      </h1>
+      <p className="text-lg text-foreground mb-4">
+        by Coach Roseanne
+      </p>
+      <p className="text-md text-muted-foreground max-w-md mb-10">
+        You have one life, you have one body&mdash;so treasure it.
+      </p>
+
+      <div className="grid grid-cols-2 gap-6 w-full max-w-lg"> 
         {pillars.map((pillar) => (
-          <PillarCard
+          <PillarGridItem
             key={pillar.title}
             title={pillar.title}
-            description={pillar.description}
             icon={pillar.icon}
             href={pillar.href}
-            imageSrc={`https://picsum.photos/seed/${pillar.title.toLowerCase()}/400/300`}
-            imageAlt={`${pillar.title} pillar image`}
-            imageHint={pillar.imageHint}
+            description={pillar.description} 
           />
         ))}
       </div>
