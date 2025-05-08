@@ -51,7 +51,8 @@ export function SidebarNav({ items }: SidebarNavProps) {
              } else if (item.matchSegments === 0 && item.href === '/') {
                 isActive = pathname === '/';
              } else {
-                isActive = pathname.startsWith(item.href) && (pathname === item.href || pathname.charAt(item.href.length) === '/');
+                // Check if current path starts with item.href and is either an exact match or followed by a '/'
+                isActive = pathname === item.href || (pathname.startsWith(item.href) && pathname.charAt(item.href.length) === '/');
              }
              // Special handling for exact match on root '/'
              if (item.href === '/' && pathname !== '/') isActive = false;
@@ -61,12 +62,16 @@ export function SidebarNav({ items }: SidebarNavProps) {
         } else {
            // Default behavior: startsWith, but exact for '/'
           isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
+           // Ensure that if item.href is '/', it's only active if pathname is exactly '/'
+           if (item.href === '/' && pathname !== '/') {
+            isActive = false;
+           }
         }
 
 
         return (
           <SidebarMenuItem key={index}>
-            <Link href={item.href} passHref legacyBehavior onClick={handleLinkClick}>
+            <Link href={item.href} asChild onClick={handleLinkClick}>
               <SidebarMenuButton
                 variant="default"
                 size="default"
