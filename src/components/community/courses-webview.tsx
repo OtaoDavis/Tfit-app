@@ -45,7 +45,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
         <CardTitle>Our Courses</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="relative aspect-video w-full min-h-[500px] bg-muted">
+        <div className="relative w-full min-h-[500px] bg-muted"> {/* Removed aspect-video */}
           {isLoading && isOnline && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/80 z-10">
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
