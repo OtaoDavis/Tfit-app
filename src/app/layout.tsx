@@ -11,8 +11,12 @@ const quicksand = Quicksand({
 });
 
 export const metadata: Metadata = {
-  title: 'FitLife Hub',
+  title: 'The Treasured Collective',
   description: 'Your personal fitness companion for mindset, nutrition, movement, and community.',
+  icons: {
+    icon: '/favicon.ico', // General favicon
+    apple: '/apple-touch-icon.png', // For Apple devices
+  },
 };
 
 export default function RootLayout({
@@ -22,6 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        {/* Standard favicon links are now handled by Next.js metadata.icons */}
+        {/* You can add more specific links here if needed, e.g., for different sizes or manifest */}
+        <link rel="manifest" href="/site.webmanifest" />
+      </head>
       <body className={`${quicksand.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
