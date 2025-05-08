@@ -10,7 +10,7 @@ const config: CapacitorConfig = {
       launchShowDuration: 3000,
       launchAutoHide: true,
       backgroundColor: "#FFFFFF", // White background for the splash screen
-      androidSplashResourceName: "tf_head_splash", // Name of the Ddrawable resource for Android (e.g., tf_head_splash.xml or your image name if directly in drawable)
+      androidSplashResourceName: "tf_head", // Updated to use tf_head (expects tf_head.png in drawables)
       androidScaleType: "CENTER_CROP", // How the splash screen image is displayed
       showSpinner: false,
       splashFullScreen: true,

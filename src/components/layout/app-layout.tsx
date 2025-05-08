@@ -2,7 +2,7 @@
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { PanelLeft } from 'lucide-react';
-import { TfHeadIcon } from '@/components/icons/tf-head-icon'; // Import the new icon
+import { TfHeadIcon } from '@/components/icons/tf-head-icon'; // Ensure this is the correct import
 import {
   SidebarProvider,
   Sidebar,
@@ -28,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
         <SidebarHeader className="p-4">
           <Link href="/" className="flex items-center gap-2">
-            <TfHeadIcon className="h-8 w-8 text-primary" /> {/* Use the new icon */}
+            <TfHeadIcon className="h-8 w-8 text-primary" /> {/* Reverted to TfHeadIcon */}
             <h1 className="text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
               The Treasured Collective
             </h1>
