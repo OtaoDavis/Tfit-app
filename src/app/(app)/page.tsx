@@ -1,11 +1,12 @@
 import { PillarGridItem } from '@/components/home/pillar-grid-item';
-import { Brain, Apple, Dumbbell, ClipboardList, CheckCircle2, Scale } from 'lucide-react';
+import { Brain, Apple, Dumbbell, Users } from 'lucide-react'; // Added Users, removed ClipboardList, CheckCircle2, Scale
 import type { LucideIcon } from 'lucide-react';
 
 interface Pillar {
   title: string;
   icon: LucideIcon;
   href: string;
+  description: string; // Added description
 }
 
 export default function HomePage() {
@@ -13,32 +14,26 @@ export default function HomePage() {
     {
       title: 'Mindset',
       icon: Brain,
-      href: '#', // Placeholder
+      href: '/#', // Placeholder
+      description: 'Cultivate a resilient and positive mindset for lasting change.',
     },
     {
       title: 'Nutrition',
       icon: Apple,
       href: '/nutrition',
+      description: 'Fuel your body with mindful, nourishing food choices.',
     },
     {
-      title: 'Fitness',
+      title: 'Movement',
       icon: Dumbbell,
-      href: '#', // Placeholder
+      href: '/#', // Placeholder
+      description: 'Discover enjoyable activities that energize and strengthen you.',
     },
     {
-      title: 'Habits',
-      icon: ClipboardList,
-      href: '#', // Placeholder
-    },
-    {
-      title: 'Consistency',
-      icon: CheckCircle2,
-      href: '#', // Placeholder
-    },
-    {
-      title: 'Balance',
-      icon: Scale,
-      href: '#', // Placeholder
+      title: 'Community',
+      icon: Users,
+      href: '/community',
+      description: 'Connect, share, and grow with our supportive wellness family.',
     },
   ];
 
@@ -57,13 +52,14 @@ export default function HomePage() {
         You have one life, you have one body&mdash;so treasure it.
       </p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 md:gap-6 w-full max-w-2xl">
+      <div className="grid grid-cols-2 gap-6 w-full max-w-lg"> {/* Updated grid layout for 4 items */}
         {pillars.map((pillar) => (
           <PillarGridItem
             key={pillar.title}
             title={pillar.title}
             icon={pillar.icon}
             href={pillar.href}
+            description={pillar.description} // Pass description
           />
         ))}
       </div>
