@@ -1,7 +1,8 @@
 "use client";
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { HeartPulse, PanelLeft } from 'lucide-react';
+import { PanelLeft } from 'lucide-react';
+import { TfHeadIcon } from '@/components/icons/tf-head-icon'; // Import the new icon
 import {
   SidebarProvider,
   Sidebar,
@@ -27,7 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
         <SidebarHeader className="p-4">
           <Link href="/" className="flex items-center gap-2">
-            <HeartPulse className="h-8 w-8 text-primary" />
+            <TfHeadIcon className="h-8 w-8 text-primary" /> {/* Use the new icon */}
             <h1 className="text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
               The Treasured Collective
             </h1>
