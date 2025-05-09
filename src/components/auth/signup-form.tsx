@@ -28,7 +28,7 @@ const signUpFormSchema = z.object({
   firstName: z.string().min(1, { message: 'First name is required.' }).max(50),
   lastName: z.string().min(1, { message: 'Last name is required.' }).max(50),
   email: z.string().email({ message: 'Please enter a valid email address.' }),
-  phoneNumber: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }).optional().or(z.literal('')), // Optional or empty
+  phoneNumber: z.string().min(10, { message: 'Phone number must be at least 10 digits.' }), // Made phone number mandatory
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   confirmPassword: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -64,11 +64,16 @@ export function SignUpForm() {
       // Update user profile with first name and last name
       await updateProfile(user, {
         displayName: `${data.firstName} ${data.lastName}`,
+        // Note: Firebase Auth user object doesn't have a direct field for phone number by default.
+        // You'd typically store this in Firestore or Realtime Database alongside the user's UID.
       });
 
-      // Here you would typically also save other details like phone number to Firestore
-      // For example: await setDoc(doc(firestore, "users", user.uid), { phoneNumber: data.phoneNumber, ... });
-      // This part is omitted for brevity as Firestore setup is not explicitly requested here.
+      // Example: Storing phone number in Firestore (requires Firestore setup)
+      // if (firestore) { // Check if firestore is initialized
+      //   const userDocRef = doc(firestore, "users", user.uid);
+      //   await setDoc(userDocRef, { phoneNumber: data.phoneNumber, email: data.email, firstName: data.firstName, lastName: data.lastName }, { merge: true });
+      // }
+
 
       toast({
         title: 'Account Created',
@@ -153,7 +158,7 @@ export function SignUpForm() {
               name="phoneNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Phone Number (Optional)</FormLabel>
+                  <FormLabel>Phone Number</FormLabel>
                   <FormControl>
                     <Input type="tel" placeholder="+1234567890" {...field} />
                   </FormControl>
