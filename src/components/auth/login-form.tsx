@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -52,7 +51,7 @@ export function LoginForm() {
         title: 'Login Successful',
         description: "Welcome back!",
       });
-      router.push('/'); // Redirect to home page or dashboard after login
+      router.push('/profile'); // Changed: Redirect to profile page after login
     } catch (error: any) {
       console.error('Login error:', error);
       let errorMessage = 'An unexpected error occurred. Please try again.';
@@ -76,7 +75,7 @@ export function LoginForm() {
       <CardHeader className="items-center text-center">
         <Link href="/" aria-label="Go to homepage">
           <TfHeadIcon className="h-16 w-16 text-primary mb-4" />
-        </Link>
+        </Link>        
         <CardTitle className="text-3xl">Welcome Back!</CardTitle>
         <CardDescription>Sign in to access The Treasured Collective.</CardDescription>
       </CardHeader>
