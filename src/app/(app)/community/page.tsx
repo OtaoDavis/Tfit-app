@@ -1,11 +1,11 @@
-'use client';
+// 'use client'; // No longer needed at page level as children handle client logic
 import { PageHeader } from '@/components/common/page-header';
 import { ChatInterface } from '@/components/community/chat-interface';
 import { CoursesWebView } from '@/components/community/courses-webview';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, BookOpen } from 'lucide-react';
-import { useAuth } from '@/contexts/auth-context';
-import { LoginPrompt } from '@/components/common/login-prompt';
+// import { useAuth } from '@/contexts/auth-context'; // ChatInterface will use this
+// import { LoginPrompt } from '@/components/common/login-prompt'; // ChatInterface will use this
 
 // This would typically come from a config or environment variable
 const KAJABI_COURSES_URL = "https://app.kajabi.com/admin/sites/2148253219/products"; 
@@ -13,24 +13,11 @@ const KAJABI_COURSES_URL = "https://app.kajabi.com/admin/sites/2148253219/produc
 // const KAJABI_COURSES_URL = `https://app.kajabi.com/admin/sites/2148253219/products?api_key=${KAJABI_API_KEY}`;
 
 export default function CommunityPage() {
-  const { user, loading } = useAuth();
-  // const [authToken, setAuthToken] = React.useState<string | null>(null);
+  // const { user, loading } = useAuth(); // ChatInterface will handle its own auth state
 
-  // React.useEffect(() => {
-  //   const fetchToken = async () => {
-  //     if (user) {
-  //       const token = await user.getIdToken();
-  //       setAuthToken(token);
-  //     }
-  //   };
-  //   if (!loading && user) {
-  //     fetchToken();
-  //   }
-  // }, [user, loading]);
-
-  if (loading) {
-    return null; // Or a loading spinner
-  }
+  // if (loading) { // Page-level loading can be removed if ChatInterface handles its specific loading
+  //   return null; 
+  // }
 
   return (
     <div className="container mx-auto">
@@ -52,17 +39,13 @@ export default function CommunityPage() {
         </TabsList>
 
         <TabsContent value="chat">
-          {!user ? (
-            <LoginPrompt featureName="Community Chat" message="Please log in to join discussions and connect with other members." />
-          ) : (
-            <section id="chat">
+           <section id="chat">
               <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">Chat</h2>
               <p className="text-muted-foreground mb-6">
-                Engage in real-time conversations with fellow FitLife Hub members. Share tips, ask questions, and find motivation.
+                Engage in real-time conversations with fellow FitLife Hub members. Share tips, ask questions, and find motivation. Log in to participate!
               </p>
               <ChatInterface />
             </section>
-          )}
         </TabsContent>
 
         <TabsContent value="courses">
@@ -71,8 +54,6 @@ export default function CommunityPage() {
             <p className="text-muted-foreground mb-6">
               Access a library of fitness and wellness courses powered by Kajabi. You may need to log in to your Kajabi account within the view below.
             </p>
-            {/* The CoursesWebView will handle its own content. If Kajabi requires login, its interface will appear in the iframe. */}
-            {/* authToken={authToken || undefined} could be passed if Kajabi supports external token-based auth via iframe messages or URL params */}
             <CoursesWebView src={KAJABI_COURSES_URL} />
           </section>
         </TabsContent>
