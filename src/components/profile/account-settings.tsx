@@ -3,7 +3,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Lock, Trash2, Bell, ShieldCheck } from 'lucide-react';
+import { Lock, Trash2, Bell, ShieldCheck, LogOut } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -18,10 +18,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase/config';
+import { useRouter } from 'next/navigation';
 
 
 export function AccountSettings() {
   const { toast } = useToast();
+  const router = useRouter();
   const [emailNotifications, setEmailNotifications] = React.useState(true);
   const [twoFactorAuth, setTwoFactorAuth] = React.useState(false);
 
@@ -58,6 +62,24 @@ export function AccountSettings() {
       title: "Security Settings Updated",
       description: `Two-factor authentication ${checked ? 'enabled' : 'disabled'}.`,
     });
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      toast({
+        title: 'Logged Out',
+        description: 'You have been successfully logged out.',
+      });
+      router.push('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast({
+        title: 'Logout Failed',
+        description: 'Could not log you out. Please try again.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -129,7 +151,12 @@ export function AccountSettings() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <p className="text-xs text-muted-foreground text-center sm:text-left">
+
+          <Button onClick={handleLogout} variant="outline" className="w-full sm:w-auto">
+            <LogOut className="mr-2 h-4 w-4" /> Logout
+          </Button>
+
+          <p className="text-xs text-muted-foreground text-center sm:text-left pt-2">
             Please be careful with these actions. Account deletion is permanent.
           </p>
         </div>

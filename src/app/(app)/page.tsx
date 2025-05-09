@@ -6,7 +6,7 @@ interface Pillar {
   title: string;
   icon: LucideIcon;
   href: string;
-  description: string; // Added description
+  description: string; 
 }
 
 export default function HomePage() {
@@ -14,7 +14,7 @@ export default function HomePage() {
     {
       title: 'Mindset',
       icon: Brain,
-      href: '/#', // Placeholder
+      href: '/#',
       description: 'Cultivate a resilient and positive mindset for lasting change.',
     },
     {
@@ -26,7 +26,7 @@ export default function HomePage() {
     {
       title: 'Movement',
       icon: Dumbbell,
-      href: '/#', // Placeholder
+      href: '/#', 
       description: 'Discover enjoyable activities that energize and strengthen you.',
     },
     {

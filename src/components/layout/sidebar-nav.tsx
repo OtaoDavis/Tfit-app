@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  useSidebar, 
 } from '@/components/ui/sidebar';
 
 interface SidebarNavProps {
@@ -16,17 +17,22 @@ interface SidebarNavProps {
 
 export function SidebarNav({ items }: SidebarNavProps) {
   const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar(); 
 
   if (!items?.length) {
     return null;
   }
 
+  const handleLinkClick = () => {
+    if (isMobile) {
+      setOpenMobile(false); 
+    }
+  };
+
   return (
     <SidebarMenu>
       {items.map((item, index) => {
         const Icon = item.icon;
-        
-        // Improved active link detection based on segments
         const currentPathSegments = pathname.split('/').filter(Boolean);
         const itemPathSegments = item.href.split('/').filter(Boolean);
         let isActive = false;
@@ -43,22 +49,23 @@ export function SidebarNav({ items }: SidebarNavProps) {
              } else if (item.matchSegments === 0 && item.href === '/') {
                 isActive = pathname === '/';
              } else {
-                isActive = pathname.startsWith(item.href) && (pathname === item.href || pathname.charAt(item.href.length) === '/');
+                isActive = pathname === item.href || (pathname.startsWith(item.href) && pathname.charAt(item.href.length) === '/');
              }
-             // Special handling for exact match on root '/'
              if (item.href === '/' && pathname !== '/') isActive = false;
              if (item.href === '/' && pathname === '/') isActive = true;
 
           }
         } else {
-           // Default behavior: startsWith, but exact for '/'
           isActive = item.href === '/' ? pathname === item.href : pathname.startsWith(item.href);
+           if (item.href === '/' && pathname !== '/') {
+            isActive = false;
+           }
         }
 
 
         return (
           <SidebarMenuItem key={index}>
-            <Link href={item.href} passHref legacyBehavior>
+            <Link href={item.href} asChild onClick={handleLinkClick}>
               <SidebarMenuButton
                 variant="default"
                 size="default"
