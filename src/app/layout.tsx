@@ -3,6 +3,7 @@ import { Quicksand } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/layout/theme-provider';
+import { AuthProvider } from '@/contexts/auth-context'; // Import AuthProvider
 
 const quicksand = Quicksand({
   subsets: ['latin'],
@@ -17,6 +18,7 @@ export const metadata: Metadata = {
     icon: '/favicon.ico', // General favicon
     apple: '/apple-touch-icon.png', // For Apple devices
   },
+  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
@@ -27,8 +29,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        {/* Standard favicon links are now handled by Next.js metadata.icons */}
-        {/* You can add more specific links here if needed, e.g., for different sizes or manifest */}
         <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${quicksand.variable} font-sans antialiased`}>
@@ -38,8 +38,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
-          <Toaster />
+          <AuthProvider> {/* Wrap children with AuthProvider */}
+            {children}
+            <Toaster />
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

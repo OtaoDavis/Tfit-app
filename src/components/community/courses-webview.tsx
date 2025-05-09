@@ -28,7 +28,6 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
       setIsOnline(navigator.onLine);
     }
 
-
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
@@ -37,6 +36,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
 
   const handleLoad = () => {
     setIsLoading(false);
+    // Removed authToken logic here. If Kajabi needs login, it will show its own login page inside the iframe.
   };
 
   return (
@@ -45,7 +45,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
         <CardTitle>Our Courses</CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className="relative w-full min-h-[500px] bg-muted"> {/* Removed aspect-video */}
+        <div className="relative w-full min-h-[calc(100vh-200px)] bg-muted"> {/* Adjusted min-height for better mobile view */}
           {isLoading && isOnline && (
             <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-background/80 z-10">
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -66,7 +66,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
               title="Kajabi Courses"
               className="absolute inset-0 h-full w-full border-0"
               onLoad={handleLoad}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals" // Added allow-modals for potential login popups
               style={{ display: isLoading ? 'none' : 'block' }}
             />
           )}

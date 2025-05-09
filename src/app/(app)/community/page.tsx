@@ -1,7 +1,6 @@
 import { PageHeader } from '@/components/common/page-header';
 import { ChatInterface } from '@/components/community/chat-interface';
 import { CoursesWebView } from '@/components/community/courses-webview';
-import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { MessageSquare, BookOpen } from 'lucide-react';
 
@@ -9,6 +8,9 @@ import { MessageSquare, BookOpen } from 'lucide-react';
 const KAJABI_COURSES_URL = "https://app.kajabi.com/admin/sites/2148253219/products"; 
 
 export default function CommunityPage() {
+  // Authentication is now handled by the (app) layout.
+  // If the user reaches this page, they are authenticated.
+
   return (
     <div className="container mx-auto">
       <PageHeader
@@ -42,8 +44,9 @@ export default function CommunityPage() {
           <section id="courses">
             <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">Courses</h2>
             <p className="text-muted-foreground mb-6">
-              Access a library of fitness and wellness courses powered by Kajabi.
+              Access a library of fitness and wellness courses powered by Kajabi. You may need to log in to your Kajabi account within the view below.
             </p>
+            {/* Removed authToken prop. Kajabi login will happen inside the iframe if necessary. */}
             <CoursesWebView src={KAJABI_COURSES_URL} />
           </section>
         </TabsContent>
