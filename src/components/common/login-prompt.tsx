@@ -37,3 +37,4 @@ export function LoginPrompt({ featureName, message }: LoginPromptProps) {
     </Card>
   );
 }
+
