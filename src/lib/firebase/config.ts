@@ -4,6 +4,7 @@ import { getAuth, type Auth } from 'firebase/auth';
 // import { getStorage, type FirebaseStorage } from 'firebase/storage';
 // import { getAnalytics, type Analytics } from 'firebase/analytics';
 
+// Ensure your .env.local file has these variables correctly defined
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -16,6 +17,16 @@ const firebaseConfig = {
 
 // Initialize Firebase
 let app: FirebaseApp;
+
+if (!firebaseConfig.apiKey) {
+  console.error(
+    'Firebase API Key is missing. Ensure NEXT_PUBLIC_FIREBASE_API_KEY is set in your .env.local file.'
+  );
+  // Optionally, throw an error or handle this state appropriately
+  // For now, we'll let Firebase initialization fail, which will produce the error.
+}
+
+
 if (!getApps().length) {
   app = initializeApp(firebaseConfig);
 } else {
