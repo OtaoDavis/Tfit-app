@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -6,6 +7,7 @@ import { Loader2, WifiOff } from 'lucide-react';
 
 interface CoursesWebViewProps {
   src: string;
+  // authToken prop removed
 }
 
 export function CoursesWebView({ src }: CoursesWebViewProps) {
@@ -66,7 +68,7 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
               title="Kajabi Courses"
               className="absolute inset-0 h-full w-full border-0"
               onLoad={handleLoad}
-              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals" // Added allow-modals for potential login popups
+              sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
               style={{ display: isLoading ? 'none' : 'block' }}
             />
           )}
@@ -75,3 +77,4 @@ export function CoursesWebView({ src }: CoursesWebViewProps) {
     </Card>
   );
 }
+

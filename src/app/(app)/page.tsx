@@ -1,12 +1,13 @@
+
 import { PillarGridItem } from '@/components/home/pillar-grid-item';
-import { Brain, Apple, Dumbbell, Users } from 'lucide-react'; // Added Users, removed ClipboardList, CheckCircle2, Scale
+import { Brain, Apple, Activity, Users } from 'lucide-react'; // Changed Dumbbell to Activity
 import type { LucideIcon } from 'lucide-react';
 
 interface Pillar {
   title: string;
   icon: LucideIcon;
   href: string;
-  description: string; 
+  description: string;
 }
 
 export default function HomePage() {
@@ -14,7 +15,7 @@ export default function HomePage() {
     {
       title: 'Mindset',
       icon: Brain,
-      href: '/#',
+      href: '/#', 
       description: 'Cultivate a resilient and positive mindset for lasting change.',
     },
     {
@@ -24,10 +25,10 @@ export default function HomePage() {
       description: 'Fuel your body with mindful, nourishing food choices.',
     },
     {
-      title: 'Movement',
-      icon: Dumbbell,
-      href: '/#', 
-      description: 'Discover enjoyable activities that energize and strengthen you.',
+      title: 'Wellness', 
+      icon: Activity,   
+      href: '/movement',
+      description: 'Track sleep, habits, steps, and manage stress for holistic wellbeing.', 
     },
     {
       title: 'Community',
@@ -52,17 +53,18 @@ export default function HomePage() {
         You have one life, you have one body&mdash;so treasure it.
       </p>
 
-      <div className="grid grid-cols-2 gap-6 w-full max-w-lg"> 
+      <div className="grid grid-cols-2 gap-6 w-full max-w-lg">
         {pillars.map((pillar) => (
           <PillarGridItem
             key={pillar.title}
             title={pillar.title}
             icon={pillar.icon}
             href={pillar.href}
-            description={pillar.description} 
+            description={pillar.description}
           />
         ))}
       </div>
     </div>
   );
 }
+

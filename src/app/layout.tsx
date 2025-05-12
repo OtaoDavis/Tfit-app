@@ -1,3 +1,4 @@
+
 import type { Metadata } from 'next';
 import { Quicksand } from 'next/font/google';
 import './globals.css';
@@ -15,8 +16,8 @@ export const metadata: Metadata = {
   title: 'The Treasured Collective',
   description: 'Your personal fitness companion for mindset, nutrition, movement, and community.',
   icons: {
-    icon: '/favicon.ico', // General favicon
-    apple: '/apple-touch-icon.png', // For Apple devices
+    icon: '/tf_head.png', 
+    apple: '/tf_head.png', 
   },
   manifest: '/site.webmanifest',
 };
@@ -38,7 +39,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AuthProvider> 
+          <AuthProvider>
             {children}
             <Toaster />
           </AuthProvider>
@@ -47,3 +48,4 @@ export default function RootLayout({
     </html>
   );
 }
+

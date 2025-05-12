@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react';
-import { Home, Apple, Users, UserCircle, Settings, Info } from 'lucide-react';
+import { Home, Apple, Users, UserCircle, Settings, Info, Activity } from 'lucide-react'; // Changed Dumbbell to Activity
 
 export interface NavItem {
   title: string;
@@ -20,6 +20,12 @@ export const mainNavItems: NavItem[] = [
     title: 'Nutrition',
     href: '/nutrition',
     icon: Apple,
+    matchSegments: 1,
+  },
+  {
+    title: 'Wellness', // Changed from Movement
+    href: '/movement',
+    icon: Activity,    // Changed from Dumbbell
     matchSegments: 1,
   },
   {

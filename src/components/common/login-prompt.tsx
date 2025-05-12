@@ -1,5 +1,6 @@
+
 'use client';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { LogIn } from 'lucide-react';
@@ -10,6 +11,13 @@ interface LoginPromptProps {
 }
 
 export function LoginPrompt({ featureName, message }: LoginPromptProps) {
+  const router = useRouter();
+
+  const handleLoginClick = () => {
+    // console.log('LoginPrompt: Attempting to navigate to /login'); // For debugging
+    router.push('/login');
+  };
+
   return (
     <Card className="my-8 text-center shadow-lg">
       <CardHeader>
@@ -27,11 +35,9 @@ export function LoginPrompt({ featureName, message }: LoginPromptProps) {
         </p>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <Button asChild size="lg">
-          <Link href="/login">
-            <LogIn className="mr-2 h-5 w-5" />
-            Login to Continue
-          </Link>
+        <Button size="lg" onClick={handleLoginClick}>
+          <LogIn className="mr-2 h-5 w-5" />
+          Login to Continue
         </Button>
       </CardFooter>
     </Card>

@@ -1,7 +1,8 @@
 "use client";
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { HeartPulse, PanelLeft } from 'lucide-react';
+import { PanelLeft } from 'lucide-react';
+import { TfHeadIcon } from '@/components/icons/tf-head-icon';
 import {
   SidebarProvider,
   Sidebar,
@@ -25,9 +26,9 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <SidebarProvider defaultOpen={true} open={true}>
       <Sidebar collapsible="icon" variant="sidebar" side="left" className="border-r">
-        <SidebarHeader className="p-4">
+        <SidebarHeader className="p-4 mt-4">
           <Link href="/" className="flex items-center gap-2">
-            <HeartPulse className="h-8 w-8 text-primary" />
+            <TfHeadIcon className="h-8 w-8 text-primary" />
             <h1 className="text-xl font-semibold text-primary group-data-[collapsible=icon]:hidden">
               The Treasured Collective
             </h1>
@@ -47,7 +48,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-10 flex h-14 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6">
+        <header className="sticky top-5 z-10 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 lg:h-[60px] lg:px-6">
           <MobileSidebarTrigger />
           <div className="flex-1">
             {/* Placeholder for breadcrumbs or search */}
@@ -63,18 +64,23 @@ export function AppLayout({ children }: AppLayoutProps) {
 }
 
 function MobileSidebarTrigger() {
-  const { isMobile, toggleSidebar } = useSidebar();
+  const { isMobile, toggleSidebar, setOpenMobile } = useSidebar(); // Added setOpenMobile
   if (!isMobile) return null;
+
+  const handleToggle = () => {
+    toggleSidebar();
+  };
 
   return (
     <Button
       variant="outline"
       size="icon"
       className="shrink-0 md:hidden"
-      onClick={toggleSidebar}
+      onClick={handleToggle}
       aria-label="Toggle navigation menu"
     >
       <PanelLeft className="h-5 w-5" />
     </Button>
   );
 }
+
