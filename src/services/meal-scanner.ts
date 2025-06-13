@@ -1,7 +1,7 @@
 
 /**
  * Represents the structure for a meal diary entry.
- * Includes nutritional info, image data (optional), and timestamp.
+ * Includes nutritional info, image file URI (optional), and timestamp.
  */
 export interface MealDiaryEntry {
   /**
@@ -25,9 +25,9 @@ export interface MealDiaryEntry {
    */
   fat: number;
   /**
-   * The base64 encoded image data URI of the meal. Optional, as it might not be stored in localStorage.
+   * The URI (path) to the image file stored on the device. Optional.
    */
-  imageDataUri?: string;
+  imageFileUri?: string;
   /**
    * The timestamp when the meal was scanned.
    */
@@ -56,17 +56,7 @@ interface MealScanResult {
  */
 export async function scanMeal(imageBase64: string, existingDiary: MealDiaryEntry[]): Promise<MealScanResult> {
   // Simulate network delay or AI processing time
-  await new Promise(resolve => setTimeout(resolve, 1000)); // Reduced delay for quicker testing
-
-  // In a real scenario, you would:
-  // 1. Send imageBase64 to your AI backend (e.g., a Genkit flow).
-  // 2. The backend analyzes the image and returns nutritional data.
-  // 3. Handle potential errors from the AI service.
-
-  // Mock response with random nutritional data:
-  if (Math.random() < 0.05) { // Simulate occasional errors (reduced probability)
-    throw new Error("Mock scan failed: Unable to analyze image.");
-  }
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
   // Determine the meal number for today
   const today = new Date();
@@ -77,6 +67,16 @@ export async function scanMeal(imageBase64: string, existingDiary: MealDiaryEntr
   const nextMealNumber = todaysMeals.length + 1;
   const mealName = `Meal ${nextMealNumber}`;
 
+  // In a real scenario, you would:
+  // 1. Send imageBase64 to your AI backend (e.g., a Genkit flow or TensorFlow.js model).
+  // 2. The backend/model analyzes the image and returns nutritional data.
+  // 3. Handle potential errors from the AI service/model.
+
+  // Mock response with random nutritional data:
+  if (Math.random() < 0.05) { 
+    throw new Error("Mock scan failed: Unable to analyze image.");
+  }
+
   // Return the nutritional data along with the generated name.
   return {
     name: mealName,
@@ -86,4 +86,3 @@ export async function scanMeal(imageBase64: string, existingDiary: MealDiaryEntr
     fat: Math.floor(Math.random() * 20) + 5,       // Random fat (5-24g)
   };
 }
-

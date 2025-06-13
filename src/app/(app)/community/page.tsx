@@ -60,9 +60,6 @@ export default function CommunityPage() {
         <TabsContent value="chat">
           <section id="chat">
             <h2 className="text-2xl font-semibold mb-4 text-foreground sr-only">Chat</h2>
-            <p className="text-muted-foreground mb-6">
-              Engage in real-time conversations with fellow Treasured Collective members. Share tips, ask questions, and find motivation. Log in to participate!
-            </p>
             <ChatInterface /> 
           </section>
         </TabsContent>

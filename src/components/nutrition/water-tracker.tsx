@@ -1,68 +1,148 @@
+
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MinusCircle, PlusCircle, Droplet, Edit3 } from 'lucide-react';
+import { MinusCircle, PlusCircle, Droplet, Edit3, History } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
+import { format, parseISO, startOfDay } from 'date-fns';
 
-const DEFAULT_GOAL_ML = 2000; // Default daily goal in ml
-const GLASS_SIZE_ML = 250; // Standard glass size in ml
+const DEFAULT_GOAL_ML = 2000;
+const GLASS_SIZE_ML = 250;
+
+const WATER_LOG_KEY = 'waterIntakeLog_v2'; // Store array of daily logs
+const USER_PREF_GOAL_KEY = 'waterUserPrefGoal_v1'; // Store user's preferred goal for new days
+
+interface WaterLogEntry {
+  date: string; // YYYY-MM-DD
+  intakeMl: number;
+  goalMl: number;
+}
 
 export function WaterTracker() {
-  const [currentIntakeMl, setCurrentIntakeMl] = useState(0);
-  const [dailyGoalMl, setDailyGoalMl] = useState(DEFAULT_GOAL_ML);
+  const [waterLog, setWaterLog] = useState<WaterLogEntry[]>([]);
+  const [dailyGoalMl, setDailyGoalMl] = useState(DEFAULT_GOAL_ML); // User's current preferred goal
   const [isMounted, setIsMounted] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>(GLASS_SIZE_ML.toString());
-  const [newGoal, setNewGoal] = useState<string>(dailyGoalMl.toString());
+  const [newGoalInput, setNewGoalInput] = useState<string>(dailyGoalMl.toString());
 
-
-  useEffect(() => {
-    setIsMounted(true);
-    // Load from local storage if available
-    const savedIntake = localStorage.getItem('waterIntake');
-    const savedGoal = localStorage.getItem('waterGoal');
-    if (savedIntake) {
-      setCurrentIntakeMl(JSON.parse(savedIntake));
-    }
-    if (savedGoal) {
-      setDailyGoalMl(JSON.parse(savedGoal));
-      setNewGoal(JSON.parse(savedGoal).toString());
-    }
+  const getTodayDateString = useCallback(() => {
+    return format(startOfDay(new Date()), 'yyyy-MM-dd');
   }, []);
 
+  // Load log and preferred goal from localStorage on mount
   useEffect(() => {
-    if (isMounted) {
-      localStorage.setItem('waterIntake', JSON.stringify(currentIntakeMl));
+    setIsMounted(true);
+    const storedLogJson = localStorage.getItem(WATER_LOG_KEY);
+    let loadedLog: WaterLogEntry[] = [];
+    if (storedLogJson) {
+      try {
+        loadedLog = JSON.parse(storedLogJson);
+      } catch (e) {
+        console.error("Failed to parse water log from localStorage", e);
+      }
     }
-  }, [currentIntakeMl, isMounted]);
-  
+
+    const storedPrefGoal = localStorage.getItem(USER_PREF_GOAL_KEY);
+    let currentPrefGoal = DEFAULT_GOAL_ML;
+    if (storedPrefGoal) {
+      currentPrefGoal = JSON.parse(storedPrefGoal);
+      setDailyGoalMl(currentPrefGoal);
+      setNewGoalInput(currentPrefGoal.toString());
+    }
+    
+    // Ensure today's entry exists
+    const todayStr = getTodayDateString();
+    const todayEntryExists = loadedLog.some(entry => entry.date === todayStr);
+    if (!todayEntryExists) {
+      loadedLog.push({ date: todayStr, intakeMl: 0, goalMl: currentPrefGoal });
+    }
+    
+    setWaterLog(loadedLog.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+
+  }, [getTodayDateString]);
+
+  // Save log to localStorage whenever it changes
+  useEffect(() => {
+    if (isMounted && waterLog.length > 0) {
+      localStorage.setItem(WATER_LOG_KEY, JSON.stringify(waterLog));
+    }
+  }, [waterLog, isMounted]);
+
+  // Save preferred goal to localStorage when it changes
   useEffect(() => {
     if (isMounted) {
-      localStorage.setItem('waterGoal', JSON.stringify(dailyGoalMl));
+      localStorage.setItem(USER_PREF_GOAL_KEY, JSON.stringify(dailyGoalMl));
+      setNewGoalInput(dailyGoalMl.toString()); // Keep dialog input in sync
     }
   }, [dailyGoalMl, isMounted]);
 
+  const updateTodaysLog = useCallback((updateFn: (currentIntake: number) => number) => {
+    const todayStr = getTodayDateString();
+    setWaterLog(prevLog => {
+      const logCopy = [...prevLog];
+      const todayIndex = logCopy.findIndex(entry => entry.date === todayStr);
+      
+      if (todayIndex !== -1) {
+        const newIntake = updateFn(logCopy[todayIndex].intakeMl);
+        // Cap intake at 2x goal to prevent extreme values
+        logCopy[todayIndex].intakeMl = Math.min(Math.max(0, newIntake), logCopy[todayIndex].goalMl * 2);
+      } else {
+        // Should not happen if initialized correctly, but handle defensively
+        const newIntake = updateFn(0);
+        logCopy.push({ date: todayStr, intakeMl: Math.min(Math.max(0, newIntake), dailyGoalMl * 2), goalMl: dailyGoalMl });
+      }
+      return logCopy.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    });
+  }, [getTodayDateString, dailyGoalMl]);
 
   const addWater = (amountMl: number) => {
-    setCurrentIntakeMl(prev => Math.min(prev + amountMl, dailyGoalMl * 2)); // Cap at 2x goal to prevent extreme values
+    updateTodaysLog(currentIntake => currentIntake + amountMl);
   };
 
   const removeWater = (amountMl: number) => {
-    setCurrentIntakeMl(prev => Math.max(0, prev - amountMl));
+    updateTodaysLog(currentIntake => currentIntake - amountMl);
   };
-
-  const progressPercentage = dailyGoalMl > 0 ? (currentIntakeMl / dailyGoalMl) * 100 : 0;
 
   const handleSetGoal = () => {
-    const goalValue = parseInt(newGoal);
+    const goalValue = parseInt(newGoalInput);
     if (!isNaN(goalValue) && goalValue > 0) {
-      setDailyGoalMl(goalValue);
+      setDailyGoalMl(goalValue); // Update preferred goal
+
+      // Update today's log entry with the new goal
+      const todayStr = getTodayDateString();
+      setWaterLog(prevLog => {
+        const logCopy = [...prevLog];
+        const todayIndex = logCopy.findIndex(entry => entry.date === todayStr);
+        if (todayIndex !== -1) {
+          logCopy[todayIndex].goalMl = goalValue;
+        } else {
+          // If today's entry somehow doesn't exist, create it
+          logCopy.push({ date: todayStr, intakeMl: 0, goalMl: goalValue });
+        }
+        return logCopy.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+      });
     }
   };
+
+  const getTodaysData = (): WaterLogEntry => {
+    const todayStr = getTodayDateString();
+    const todayData = waterLog.find(entry => entry.date === todayStr);
+    return todayData || { date: todayStr, intakeMl: 0, goalMl: dailyGoalMl };
+  };
+
+  const todayData = getTodaysData();
+  const progressPercentage = todayData.goalMl > 0 ? (todayData.intakeMl / todayData.goalMl) * 100 : 0;
 
   if (!isMounted) {
     return (
@@ -82,106 +162,146 @@ export function WaterTracker() {
   }
 
   return (
-    <Card className="shadow-lg">
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Droplet className="h-6 w-6 text-primary" />
-            Hydration Status
-          </div>
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Edit daily goal">
-                <Edit3 className="h-5 w-5 text-muted-foreground hover:text-primary" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Set Daily Water Goal</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="daily-goal" className="text-right col-span-1">
-                    Goal (ml)
-                  </Label>
-                  <Input
-                    id="daily-goal"
-                    type="number"
-                    value={newGoal}
-                    onChange={(e) => setNewGoal(e.target.value)}
-                    className="col-span-3"
-                    min="1"
-                  />
+    <>
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Droplet className="h-6 w-6 text-primary" />
+              Today&apos;s Hydration
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="ghost" size="icon" aria-label="Edit daily goal">
+                  <Edit3 className="h-5 w-5 text-muted-foreground hover:text-primary" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Set Daily Water Goal</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="daily-goal" className="text-right col-span-1">
+                      Goal (ml)
+                    </Label>
+                    <Input
+                      id="daily-goal"
+                      type="number"
+                      value={newGoalInput}
+                      onChange={(e) => setNewGoalInput(e.target.value)}
+                      className="col-span-3"
+                      min="1"
+                    />
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline">Cancel</Button>
-                </DialogClose>
-                <DialogClose asChild>
-                  <Button type="submit" onClick={handleSetGoal}>Set Goal</Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardTitle>
-        <CardDescription>
-          {currentIntakeMl} ml / {dailyGoalMl} ml ({Math.round(progressPercentage)}%)
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center space-y-6">
-        <Progress value={progressPercentage} className="w-full h-4 rounded-full" />
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
-          <Button
-            onClick={() => removeWater(GLASS_SIZE_ML)}
-            variant="outline"
-            size="lg"
-            className="flex items-center gap-2 w-full sm:w-auto"
-            aria-label={`Remove ${GLASS_SIZE_ML}ml`}
-            disabled={currentIntakeMl === 0}
-          >
-            <MinusCircle className="h-5 w-5" />
-            Remove Glass ({GLASS_SIZE_ML}ml)
-          </Button>
-          <Button
-            onClick={() => addWater(GLASS_SIZE_ML)}
-            variant="default"
-            size="lg"
-            className="flex items-center gap-2 w-full sm:w-auto"
-            aria-label={`Add ${GLASS_SIZE_ML}ml`}
-          >
-            <PlusCircle className="h-5 w-5" />
-            Add Glass ({GLASS_SIZE_ML}ml)
-          </Button>
-        </div>
-        <div className="flex flex-col sm:flex-row items-end gap-2 w-full max-w-xs">
-          <div className="flex-grow">
-            <Label htmlFor="custom-amount" className="text-sm text-muted-foreground">Custom Amount (ml)</Label>
-            <Input
-              id="custom-amount"
-              type="number"
-              value={customAmount}
-              onChange={(e) => setCustomAmount(e.target.value)}
-              min="1"
-              className="mt-1"
-            />
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline">Cancel</Button>
+                  </DialogClose>
+                  <DialogClose asChild>
+                    <Button type="submit" onClick={handleSetGoal}>Set Goal</Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardTitle>
+          <CardDescription>
+            {todayData.intakeMl} ml / {todayData.goalMl} ml ({Math.round(progressPercentage)}%)
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center space-y-6">
+          <Progress value={progressPercentage} className="w-full h-4 rounded-full" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+            <Button
+              onClick={() => removeWater(GLASS_SIZE_ML)}
+              variant="outline"
+              size="lg"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              aria-label={`Remove ${GLASS_SIZE_ML}ml`}
+              disabled={todayData.intakeMl === 0}
+            >
+              <MinusCircle className="h-5 w-5" />
+              Remove Glass ({GLASS_SIZE_ML}ml)
+            </Button>
+            <Button
+              onClick={() => addWater(GLASS_SIZE_ML)}
+              variant="default"
+              size="lg"
+              className="flex items-center gap-2 w-full sm:w-auto"
+              aria-label={`Add ${GLASS_SIZE_ML}ml`}
+            >
+              <PlusCircle className="h-5 w-5" />
+              Add Glass ({GLASS_SIZE_ML}ml)
+            </Button>
           </div>
-          <Button
-            onClick={() => {
-              const amount = parseInt(customAmount);
-              if (!isNaN(amount) && amount > 0) addWater(amount);
-            }}
-            variant="secondary"
-            className="w-full sm:w-auto"
-            aria-label="Add custom amount"
-          >
-            Add Custom
-          </Button>
-        </div>
-      </CardContent>
-      <CardFooter className="text-xs text-muted-foreground justify-center">
-        <p>Tip: Aim for {dailyGoalMl / 1000} liters per day!</p>
-      </CardFooter>
-    </Card>
+          <div className="flex flex-col sm:flex-row items-end gap-2 w-full max-w-xs">
+            <div className="flex-grow">
+              <Label htmlFor="custom-amount" className="text-sm text-muted-foreground">Custom Amount (ml)</Label>
+              <Input
+                id="custom-amount"
+                type="number"
+                value={customAmount}
+                onChange={(e) => setCustomAmount(e.target.value)}
+                min="1"
+                className="mt-1"
+              />
+            </div>
+            <Button
+              onClick={() => {
+                const amount = parseInt(customAmount);
+                if (!isNaN(amount) && amount > 0) addWater(amount);
+              }}
+              variant="secondary"
+              className="w-full sm:w-auto"
+              aria-label="Add custom amount"
+            >
+              Add Custom
+            </Button>
+          </div>
+        </CardContent>
+        <CardFooter className="text-xs text-muted-foreground justify-center">
+          <p>Tip: Aim for {todayData.goalMl / 1000} liters per day!</p>
+        </CardFooter>
+      </Card>
+
+      {waterLog.length > 1 && ( // Only show history if there's more than just today
+        <section id="water-history" className="mt-8">
+          <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
+            <History className="h-5 w-5 text-primary" />
+            Water Intake History
+          </h3>
+          {waterLog.filter(entry => entry.date !== getTodayDateString()).length === 0 ? (
+             <Card className="shadow-md">
+                <CardContent className="pt-6 text-center text-muted-foreground">
+                    No past history yet. Keep tracking!
+                </CardContent>
+             </Card>
+          ) : (
+            <Accordion type="multiple" className="w-full space-y-2">
+              {waterLog
+                .filter(entry => entry.date !== getTodayDateString()) // Exclude today from history list
+                .map(entry => (
+                <AccordionItem value={entry.date} key={entry.date} className="border-b-0 rounded-lg overflow-hidden shadow-md bg-card">
+                  <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 text-base font-medium">
+                    {format(parseISO(entry.date), "MMMM d, yyyy (eeee)")}
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="p-4 border-t bg-background text-sm">
+                      <p>Intake: <span className="font-semibold">{entry.intakeMl} ml</span></p>
+                      <p>Goal: <span className="font-semibold">{entry.goalMl} ml</span></p>
+                      <Progress 
+                        value={(entry.intakeMl / entry.goalMl) * 100} 
+                        className="w-full h-3 mt-2" 
+                      />
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </section>
+      )}
+    </>
   );
 }
