@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -19,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
+// ScrollArea is no longer needed for the meal history
 import { format } from 'date-fns';
 import { Camera as CapacitorCameraPlugin, CameraResultType, CameraSource, Photo as CapacitorPhoto, CameraPermissionState } from '@capacitor/camera';
 import { Capacitor } from '@capacitor/core';
@@ -337,6 +337,14 @@ export function MealScanner() {
     }
   };
 
+  // --- NEW --- Function to handle deleting a meal
+  const handleDeleteMeal = (timestampToDelete: Date) => {
+    setMealDiary(prevDiary => prevDiary.filter(meal => meal.timestamp.getTime() !== timestampToDelete.getTime()));
+    toast({
+      title: 'Meal Deleted',
+      description: 'The meal has been removed from your history.',
+    });
+  };
 
   const toggleScanMode = () => {
     handleRemoveImage();
@@ -348,7 +356,6 @@ export function MealScanner() {
   const groupMealsByDate = (meals: MealDiaryEntry[]): Record<string, MealDiaryEntry[]> => {
     return meals.reduce((acc, meal) => {
       const mealTimestamp = meal.timestamp instanceof Date ? meal.timestamp : new Date(meal.timestamp);
-      // 'en-CA' gives YYYY-MM-DD format which is good for sorting and consistency
       const dateKey = mealTimestamp.toLocaleDateString('en-CA'); 
       if (!acc[dateKey]) {
         acc[dateKey] = [];
@@ -369,7 +376,7 @@ export function MealScanner() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <ScanLine className="h-6 w-6 text-primary" />
-              Add To Meal Diary
+              Scan Your Meal
             </div>
             {Capacitor.isPluginAvailable('Camera') && Capacitor.isNativePlatform() && (
               <Button variant="outline" size="sm" onClick={toggleScanMode} disabled={isLoading}>
@@ -453,16 +460,10 @@ export function MealScanner() {
                       <CheckCircle2 className="h-5 w-5" />
                       Nutritional Information
                     </CardTitle>
-                    {/* <CardDescription>Estimated values for: <strong>{mealInfo.name}</strong></CardDescription> */}
+                    <CardDescription>Estimated values for: <strong>{mealInfo.name}</strong></CardDescription>
                   </CardHeader>
                   <CardContent>
-                    {/* <ul className="space-y-2 text-sm">
-                      <li className="flex justify-between"><span>Calories:</span> <span className="font-semibold">{mealInfo.calories} kcal</span></li>
-                      <li className="flex justify-between"><span>Protein:</span> <span className="font-semibold">{mealInfo.protein} g</span></li>
-                      <li className="flex justify-between"><span>Carbohydrates:</span> <span className="font-semibold">{mealInfo.carbohydrates} g</span></li>
-                      <li className="flex justify-between"><span>Fat:</span> <span className="font-semibold">{mealInfo.fat} g</span></li>
-                    </ul> */}
-                     <p className="text-muted-foreground text-center">Nutrition Analysis Coming Soon</p>
+                     <p className="text-xs text-muted-foreground mt-4">Nutritional Analysis Coming Soon!</p>
                   </CardContent>
                 </Card>
               )}
@@ -485,7 +486,7 @@ export function MealScanner() {
               ) : (
                 <>
                   <ScanLine className="mr-2 h-4 w-4" />
-                   Scan Meal {(trialAvailable && !user) ? "" : ""}
+                   Scan Meal {(trialAvailable && !user) ? "(1 Free Trial)" : ""}
                 </>
               )}
             </Button>
@@ -511,56 +512,63 @@ export function MealScanner() {
             </CardContent>
           </Card>
         ) : (
-          <Accordion type="multiple" className="w-full space-y-2">
+          <Accordion type="multiple" defaultValue={[sortedDates[0]]} className="w-full space-y-2">
             {sortedDates.map(dateKey => (
               <AccordionItem value={dateKey} key={dateKey} className="border-b-0 rounded-lg overflow-hidden shadow-md bg-card">
                 <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 text-base font-medium">
                   {format(new Date(dateKey + 'T00:00:00'), "MMMM d, yyyy (eeee)")}
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div className="space-y-4 p-4 border-t bg-background">
+                  {/* --- GRID LAYOUT START --- */}
+                  <div className="p-4 border-t bg-background grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {groupedMeals[dateKey]
-                      .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()) 
-                      .map((meal, index) => (
-                      <Card key={`${meal.timestamp.toISOString()}-${index}`} className="shadow-sm overflow-hidden">
-                        <div className="md:flex">
-                          {meal.imageFileUri ? (
-                            <div className="md:w-1/3 relative aspect-video md:aspect-square">
-                              <Image
-                                src={meal.imageFileUri}
-                                alt={meal.name || 'Scanned meal'}
-                                layout="fill"
-                                objectFit="cover"
-                                data-ai-hint="food delicious"
-                                unoptimized={Capacitor.isNativePlatform()}
-                              />
-                            </div>
-                          ) : (
-                             <div className="md:w-1/3 flex items-center justify-center bg-muted p-4 aspect-video md:aspect-square">
-                                <ImageIcon className="h-12 w-12 text-muted-foreground" />
-                              </div>
-                          )}
-                          <div className="p-4 md:w-2/3">
-                            <CardHeader className="p-0 pb-2">
-                              <CardTitle className="text-lg">{meal.name || 'Scanned Meal'}</CardTitle>
-                              <CardDescription className="text-xs">
-                                {format(new Date(meal.timestamp), "p")} {/* Time e.g., 2:30 PM */}
-                              </CardDescription>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                              {/* <ul className="space-y-0.5 text-sm">
-                                <li className="flex justify-between"><span>Calories:</span> <span className="font-medium">{Number(meal.calories).toFixed(0)} kcal</span></li>
-                                <li className="flex justify-between"><span>Protein:</span> <span className="font-medium">{Number(meal.protein).toFixed(1)} g</span></li>
-                                <li className="flex justify-between"><span>Carbs:</span> <span className="font-medium">{Number(meal.carbohydrates).toFixed(1)} g</span></li>
-                                <li className="flex justify-between"><span>Fat:</span> <span className="font-medium">{Number(meal.fat).toFixed(1)} g</span></li>
-                              </ul> */}
-                              <p className="text-muted-foreground text-center">Nutrition Analysis Coming Soon</p>
-                            </CardContent>
+                      .sort((a,b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+                      .map((meal) => (
+                      <Card key={meal.timestamp.toISOString()} className="shadow-sm overflow-hidden group relative">
+                        {meal.imageFileUri ? (
+                          <div className="relative aspect-video w-full">
+                            <Image
+                              src={meal.imageFileUri}
+                              alt={meal.name || 'Scanned meal'}
+                              layout="fill"
+                              objectFit="cover"
+                              data-ai-hint="food healthy"
+                              unoptimized={Capacitor.isNativePlatform()}
+                            />
+                            {/* --- DELETE BUTTON --- */}
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent accordion from toggling
+                                handleDeleteMeal(meal.timestamp);
+                              }}
+                              className="absolute top-2 right-2 z-10 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                              aria-label="Delete meal"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
+                        ) : (
+                          <div className="flex items-center justify-center bg-muted p-4 aspect-video w-full">
+                            <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                          </div>
+                        )}
+                        <div className="p-2.5">
+                          <CardHeader className="p-0 pb-1.5">
+                            <CardTitle className="text-sm font-semibold truncate">{meal.name || 'Scanned Meal'}</CardTitle>
+                            <CardDescription className="text-xs">
+                              {format(new Date(meal.timestamp), "h:mm a")}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent className="p-0">
+                            <p className="text-muted-foreground text-center">Nutritional Analysis Coming Soon!</p>
+                          </CardContent>
                         </div>
                       </Card>
                     ))}
                   </div>
+                  {/* --- GRID LAYOUT END --- */}
                 </AccordionContent>
               </AccordionItem>
             ))}
@@ -570,4 +578,3 @@ export function MealScanner() {
     </>
   );
 }
-
