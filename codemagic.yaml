@@ -5,6 +5,7 @@ workflows:
       node: 22.15.0
       xcode: latest
       cocoapods: default
+    working_directory: Tfit-app
     scripts:
       - name: Install dependencies
         script: |
