@@ -9,8 +9,11 @@ workflows:
     scripts:
       - name: Install dependencies
         script: |
-          npm ci
-          npm run build
+          echo "Installing node modules..."
+          npm ci || { echo "npm ci failed"; exit 1; }
+      
+          echo "Running build..."
+          npm run build || { echo "Build failed"; exit 1; }
 
       - name: Capacitor Sync
         script: |
