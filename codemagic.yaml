@@ -1,0 +1,38 @@
+workflows:
+  ios-capacitor-dev:
+    name: iOS Build (No Signing Yet)
+    environment:
+      node: 20.0.0
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Install dependencies
+        script: |
+          npm ci
+          npm run build
+
+      - name: Capacitor Sync
+        script: |
+          npx cap sync ios
+          npx cap copy ios
+          cd ios/App && pod install
+
+      - name: Build iOS app (unsigned)
+        script: |
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -archivePath $CM_BUILD_DIR/App.xcarchive \
+                     archive
+
+          # Export the archive as unsigned .ipa
+          xcodebuild -exportArchive \
+                     -archivePath $CM_BUILD_DIR/App.xcarchive \
+                     -exportPath $CM_BUILD_DIR/build \
+                     -exportOptionsPlist ExportOptions.plist || echo "Skipping code signing"
+
+    artifacts:
+      - build/**/*.ipa
+      - ios/App/build/**/*.app
