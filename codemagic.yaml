@@ -2,7 +2,7 @@ workflows:
   ios-capacitor-dev:
     name: iOS Build (No Signing Yet)
     environment:
-      node: 20.0.0
+      node: 22.15.0
       xcode: latest
       cocoapods: default
     scripts:
