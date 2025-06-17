@@ -5,20 +5,20 @@ workflows:
       node: 22.15.0
       xcode: latest
       cocoapods: default
-    working_directory: Tfit-app
+      groups:
+        - firebase
+        - kajabi
     scripts:
       - name: Install dependencies
         script: |
-          echo "Installing node modules..."
-          npm ci || { echo "npm ci failed"; exit 1; }
-      
-          echo "Running build..."
-          npm run build || { echo "Build failed"; exit 1; }
+          npm ci
+          npm run build
 
       - name: Capacitor Sync
         script: |
           npx cap sync ios
           npx cap copy ios
+          gem install cocoapods
           cd ios/App && pod install
 
       - name: Build iOS app (unsigned)
