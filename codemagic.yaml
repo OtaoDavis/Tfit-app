@@ -6,7 +6,13 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        DEVELOPMENT_TEAM: "X3L24943PL" 
+        DEVELOPMENT_TEAM: "X3L24943PL"
+      code_signing:
+        provisioning_profiles:
+          - tfitapp.mobileprovision
+        certificates:
+          - tfit_cert.p12
+
     scripts:
       - name: Install dependencies
         script: |
@@ -30,15 +36,13 @@ workflows:
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      CODE_SIGN_STYLE=Manual \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
-                     PROVISIONING_PROFILE_SPECIFIER="Your Provisioning Profile Name" \
+                     PROVISIONING_PROFILE_SPECIFIER="Your Profile Name" \
                      archive
 
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
                      -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist
+
     artifacts:
       - build/**/*.ipa
-    signing:
-      provisioning_profile: tfitapp.mobileprovision
-      certificate: tfit_cert.p12
