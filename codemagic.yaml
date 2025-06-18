@@ -40,4 +40,6 @@ workflows:
                      -exportOptionsPlist ExportOptions.plist
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/**/*.ipa
+      - ios/App/build/**/*.app
+
