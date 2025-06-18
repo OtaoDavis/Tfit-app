@@ -26,11 +26,18 @@ workflows:
 
       - name: Build iOS app (signed)
         script: |
-          xcode-project build-ipa \
-            --workspace ios/App/App.xcworkspace \
-            --scheme App \
-            --export-method app-store \
-            --team-id X3L24943PL
+          cd ios/App
+          xcodebuild -workspace App.xcworkspace \
+                     -scheme App \
+                     -configuration Release \
+                     -sdk iphoneos \
+                     -archivePath $CM_BUILD_DIR/App.xcarchive \
+                     archive
+      
+          xcodebuild -exportArchive \
+                     -archivePath $CM_BUILD_DIR/App.xcarchive \
+                     -exportPath $CM_BUILD_DIR/build \
+                     -exportOptionsPlist ExportOptions.plist
 
     artifacts:
       - build/ios/ipa/*.ipa
