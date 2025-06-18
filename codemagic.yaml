@@ -1,16 +1,12 @@
 workflows:
-  ios-capacitor-dev:
-    name: iOS Build (signed)
+  ios-capacitor-testflight:
+    name: iOS TestFlight Build
     environment:
       node: 22.15.0
       xcode: latest
       cocoapods: default
-      groups:
-        - firebase
-        - kajabi
-        - signing
       vars:
-        DEVELOPMENT_TEAM: "X3L24943PL"
+        DEVELOPMENT_TEAM: "X3L24943PL" 
     scripts:
       - name: Install dependencies
         script: |
@@ -32,16 +28,17 @@ workflows:
                      -configuration Release \
                      -sdk iphoneos \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
-                     CODE_SIGN_STYLE=Automatic \
+                     CODE_SIGN_STYLE=Manual \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
-                     -allowProvisioningUpdates \
+                     PROVISIONING_PROFILE_SPECIFIER="Your Provisioning Profile Name" \
                      archive
 
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
-                     -exportOptionsPlist ExportOptions.plist
-
+                     -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist
     artifacts:
       - build/**/*.ipa
-      - ios/App/build/**/*.app
+    signing:
+      provisioning_profile: tfitapp.mobileprovision
+      certificate: tfit_cert.p12
