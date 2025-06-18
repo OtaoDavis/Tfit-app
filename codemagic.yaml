@@ -3,15 +3,20 @@ workflows:
     name: iOS TestFlight Build
     environment:
       node: 22.15.0
-      xcode: latest
+      xcode: 15.3 
       cocoapods: default
+      groups:
+        - signing
+        - firebase 
       vars:
         DEVELOPMENT_TEAM: "X3L24943PL"
-      code_signing:
-        provisioning_profiles:
-          - tfitapp.mobileprovision
-        certificates:
-          - tfit_cert.p12
+        BUNDLE_ID: "com.treasurefitness.com"
+
+    code_signing:
+      provisioning_profiles:
+        - tfitapp.mobileprovision 
+      certificates:
+        - tfit_cert.p12
 
     scripts:
       - name: Install dependencies
@@ -22,13 +27,26 @@ workflows:
       - name: Capacitor Sync
         script: |
           npx cap sync ios
-          npx cap copy ios
-          gem install cocoapods
-          cd ios/App && pod install
+          # 'cap sync' already does the copy, so 'cap copy' is redundant
+          cd ios/App && pod install && cd ../..
+
+      - name: Set up code signing
+        script: |
+          keychain initialize
+          # Use the password from the 'signing' environment group
+          keychain add-certificates --certificate-password $CM_CERTIFICATE_PASSWORD
+          PROFILES_HOME="$HOME/Library/MobileDevice/Provisioning Profiles"
+          mkdir -p "$PROFILES_HOME"
+          # Find the profile Codemagic downloaded and copy it to where Xcode can find it
+          PROFILE_PATH=$(find $CM_BUILD_DIR/profiles -name "*.mobileprovision")
+          cp "$PROFILE_PATH" "$PROFILES_HOME"
 
       - name: Build iOS app (signed)
         script: |
           cd ios/App
+          # Get the UUID from the profile file dynamically
+          PROFILE_UUID=$(grep UUID -A1 -a "$PROFILE_PATH" | grep -io "[-A-F0-9]\{36\}")
+
           xcodebuild -workspace App.xcworkspace \
                      -scheme App \
                      -configuration Release \
@@ -36,13 +54,16 @@ workflows:
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      CODE_SIGN_STYLE=Manual \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
-                     PROVISIONING_PROFILE_SPECIFIER="Your Profile Name" \
+                     CODE_SIGN_IDENTITY="Apple Distribution" \
+                     PROVISIONING_PROFILE_SPECIFIER="$PROFILE_UUID" \
                      archive
 
+          # Use the correct relative path to the plist you committed
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
-                     -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist
+                     -exportOptionsPlist ExportOptions.plist
 
     artifacts:
-      - build/**/*.ipa
+      - $CM_BUILD_DIR/build/*.ipa
+      - $CM_BUILD_DIR/build/*.dSYM
