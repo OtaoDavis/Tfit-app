@@ -25,12 +25,12 @@ workflows:
 
       - name: Build iOS app (signed)
         script: |
-          cd ios/App/App
+          cd ios/App
           xcodebuild -workspace App.xcworkspace \
                      -scheme App \
                      -configuration Release \
                      -sdk iphoneos \
-                     -archivePath $CM_BUILD_DIR/App.xcarchive \
+                     -archivePath App.xcarchive \
                      CODE_SIGN_STYLE=Manual \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
                      PROVISIONING_PROFILE_SPECIFIER="tfit-app" \
