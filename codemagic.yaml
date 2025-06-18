@@ -35,11 +35,12 @@ workflows:
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
                      PROVISIONING_PROFILE_SPECIFIER="tfit-app" \
                      archive
-
+      
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
-                     -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist
+                     -exportOptionsPlist ExportOptions.plist
+
 
     artifacts:
       - build/**/*.ipa
