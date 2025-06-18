@@ -7,11 +7,8 @@ workflows:
       cocoapods: default
       vars:
         DEVELOPMENT_TEAM: "X3L24943PL"
-      code_signing:
-        provisioning_profiles:
-          - tfitapp.mobileprovision
-        certificates:
-          - tfit_cert.p12
+      groups:
+        - firebase
 
     scripts:
       - name: Install dependencies
@@ -36,7 +33,7 @@ workflows:
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      CODE_SIGN_STYLE=Manual \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
-                     PROVISIONING_PROFILE_SPECIFIER="Your Profile Name" \
+                     PROVISIONING_PROFILE_SPECIFIER="TFIT Ad Hoc Profile" \
                      archive
 
           xcodebuild -exportArchive \
