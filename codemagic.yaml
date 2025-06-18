@@ -42,6 +42,9 @@ workflows:
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
                      -exportOptionsPlist ExportOptions.plist
+    signing:
+      provisioning_profile: automatic
+      certificate: Apple Distribution
 
     artifacts:
       - build/**/*.ipa
