@@ -1,16 +1,17 @@
 workflows:
-  ios-capacitor-dev:
-    name: iOS Build (signed)
+  ios-capacitor-signed:
+    name: iOS Build (Signed)
     environment:
+      vars:
+        XCODE_WORKSPACE: App.xcworkspace
+        XCODE_SCHEME: App
       node: 22.15.0
       xcode: latest
       cocoapods: default
-      groups:
-        - firebase
-        - kajabi
-        - signing
-      vars:
-        DEVELOPMENT_TEAM: "X3L24943PL" 
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.treasurefitness.com
+        team_id: X3L24943PL
     scripts:
       - name: Install dependencies
         script: |
@@ -21,19 +22,18 @@ workflows:
         script: |
           npx cap sync ios
           npx cap copy ios
-          gem install cocoapods
           cd ios/App && pod install
 
       - name: Build iOS app (signed)
         script: |
           cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
+          xcodebuild -workspace $XCODE_WORKSPACE \
+                     -scheme $XCODE_SCHEME \
                      -configuration Release \
                      -sdk iphoneos \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      archive
-      
+
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      -exportPath $CM_BUILD_DIR/build \
@@ -41,5 +41,3 @@ workflows:
 
     artifacts:
       - build/**/*.ipa
-      - ios/App/build/**/*.app
-
