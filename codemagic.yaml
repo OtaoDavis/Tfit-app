@@ -23,6 +23,13 @@ workflows:
           npx cap copy ios
           gem install cocoapods
           cd ios/App && pod install
+          
+      - name: Use Xcode managed signing
+        script: |
+          xcode-project use-profiles --project ios/App/App.xcodeproj \
+            --target "App" \
+            --bundle-id com.treasurefitness.com \
+            --team-id X3L24943PL
 
       - name: Build iOS app (signed)
         script: |
