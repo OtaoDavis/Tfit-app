@@ -34,7 +34,9 @@ workflows:
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
                      CODE_SIGN_STYLE=Automatic \
                      DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
+                     -allowProvisioningUpdates \
                      archive
+
 
           xcodebuild -exportArchive \
                      -archivePath $CM_BUILD_DIR/App.xcarchive \
