@@ -1,6 +1,6 @@
 workflows:
   ios-capacitor-dev:
-    name: iOS Build (No Signing Yet)
+    name: iOS Build (signed)
     environment:
       node: 22.15.0
       xcode: latest
@@ -8,6 +8,9 @@ workflows:
       groups:
         - firebase
         - kajabi
+        - signing
+      vars:
+        DEVELOPMENT_TEAM: "X3L24943PL" 
     scripts:
       - name: Install dependencies
         script: |
@@ -21,22 +24,13 @@ workflows:
           gem install cocoapods
           cd ios/App && pod install
 
-      - name: Build iOS app (unsigned)
+      - name: Build iOS app (signed)
         script: |
-          cd ios/App
-          xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
-                     -configuration Release \
-                     -sdk iphoneos \
-                     -archivePath $CM_BUILD_DIR/App.xcarchive \
-                     archive
-
-          # Export the archive as unsigned .ipa
-          xcodebuild -exportArchive \
-                     -archivePath $CM_BUILD_DIR/App.xcarchive \
-                     -exportPath $CM_BUILD_DIR/build \
-                     -exportOptionsPlist ExportOptions.plist || echo "Skipping code signing"
+          xcode-project build-ipa \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App \
+            --export-method app-store \
+            --team-id X3L24943PL
 
     artifacts:
-      - build/**/*.ipa
-      - ios/App/build/**/*.app
+      - build/ios/ipa/*.ipa
