@@ -21,11 +21,11 @@ workflows:
           npx cap sync ios
           npx cap copy ios
           gem install cocoapods
-          cd ios/App && pod install
+          cd ios/App/App && pod install
 
       - name: Build iOS app (signed)
         script: |
-          cd ios/App
+          cd ios/App/App
           xcodebuild -workspace App.xcworkspace \
                      -scheme App \
                      -configuration Release \
