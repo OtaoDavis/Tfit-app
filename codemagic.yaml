@@ -9,6 +9,9 @@ workflows:
         DEVELOPMENT_TEAM: "X3L24943PL"
       groups:
         - firebase
+      ios_signing:
+        distribution_type: app_store 
+        bundle_identifier: com.treasurefitness.com
 
     scripts:
       - name: Install dependencies
