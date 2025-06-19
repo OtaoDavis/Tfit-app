@@ -26,23 +26,26 @@ workflows:
           gem install cocoapods
           cd ios/App/App && pod install
 
+      - name: Initialize keychain
+        script: keychain initialize
+        
+      - name: Set up code signing settings on Xcode project
+        script: xcode-project use-profiles
+
       - name: Build iOS app (signed)
         script: |
           cd ios/App
           xcodebuild -workspace App.xcworkspace \
-                     -scheme App \
-                     -configuration Release \
-                     -sdk iphoneos \
-                     -archivePath App.xcarchive \
-                     CODE_SIGN_STYLE=Manual \
-                     DEVELOPMENT_TEAM=$DEVELOPMENT_TEAM \
-                     PROVISIONING_PROFILE_SPECIFIER="Tfit provision" \
-                     archive
+            -scheme App \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath App.xcarchive \
+            archive
       
           xcodebuild -exportArchive \
-                     -archivePath App.xcarchive \
-                     -exportPath $CM_BUILD_DIR/build \
-                     -exportOptionsPlist ExportOptions.plist
+            -archivePath App.xcarchive \
+            -exportPath $CM_BUILD_DIR/build \
+            -exportOptionsPlist ExportOptions.plist
 
 
     artifacts:
