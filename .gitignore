@@ -41,6 +41,7 @@ next-env.d.ts
 
 #capacitor
 /android
+/iOS Keys
 -/ios
 +/ios/Pods
 +/ios/build
