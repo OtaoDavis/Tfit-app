@@ -44,7 +44,7 @@ workflows:
       
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
-            -exportPath $CM_BUILD_DIR/build \
+            -exportPath build \
             -exportOptionsPlist ExportOptions.plist
 
 
