@@ -2,6 +2,7 @@ workflows:
   ios-capacitor-testflight:
     name: iOS TestFlight Build
     environment:
+      # 'ios_signing' must be a child of 'environment'
       node: 22.15.0
       xcode: latest
       cocoapods: default
@@ -10,11 +11,11 @@ workflows:
         BUNDLE_ID: "com.treasurefitness.com"
       groups:
         - firebase
-    ios_signing:
-      provisioning_profiles:
-        - Tfit provision
-      certificates:
-        - tfit_cert
+      ios_signing:
+        provisioning_profiles:
+          - Tfit provision
+        certificates:
+          - tfit_cert
 
     scripts:
       - name: Install dependencies
@@ -29,7 +30,6 @@ workflows:
 
       - name: Set Development Team in Xcode project
         script: |
-          # This command fixes the "requires a development team" error during the archive step.
           XCODE_PROJECT="ios/App/App.xcodeproj/project.pbxproj"
           sed -i.bak "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM};/g" $XCODE_PROJECT
 
@@ -42,8 +42,6 @@ workflows:
         script: |
           cd ios/App
 
-          # This script creates the ExportOptions.plist needed for the export step.
-          # It uses the certificate's official Common Name, which is the most reliable method.
           cat > ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -74,7 +72,6 @@ workflows:
           cat ExportOptions.plist
           echo "------------------------------------"
 
-          # Build the archive
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -82,7 +79,6 @@ workflows:
             -archivePath App.xcarchive \
             archive
 
-          # Export the archive to an .ipa file
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
             -exportPath ../../build \
