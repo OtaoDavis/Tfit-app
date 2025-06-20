@@ -19,32 +19,62 @@ workflows:
           npm ci
           npm run build
 
-      - name: Capacitor Sync
+      - name: Capacitor Sync and Pod Install
         script: |
           npx cap sync ios
-          npx cap copy ios
-          gem install cocoapods
-          cd ios/App/App && pod install
+          cd ios/App && pod install
 
       - name: Initialize keychain
         script: keychain initialize
-        
-      - name: Set up code signing settings on Xcode project
-        script: xcode-project use-profiles
 
-      - name: Build iOS app (signed)
+      - name: Build and export iOS app
         script: |
+          # Navigate to the ios directory
           cd ios/App
+
+          # Create a dynamic ExportOptions.plist
+          # This uses Codemagic's environment variables to ensure the correct profile and certificate are used.
+          cat > ExportOptions.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>app-store-connect</string> 
+              <key>teamID</key>
+              <string>${DEVELOPMENT_TEAM}</string>
+              <key>signingStyle</key>
+              <string>manual</string>
+              <key>uploadBitcode</key>
+              <true/>
+              <key>compileBitcode</key>
+              <true/>
+              <key>provisioningProfiles</key>
+              <dict>
+                  <key>${CM_BUNDLE_ID}</key>
+                  <string>${CM_PROVISIONING_PROFILE_UUID}</string>
+              </dict>
+              <key>signingCertificate</key>
+              <string>${CM_CERTIFICATE_COMMON_NAME}</string>
+          </dict>
+          </plist>
+          EOF
+
+          echo "Generated ExportOptions.plist:"
+          cat ExportOptions.plist
+
+          # Build the archive
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath App.xcarchive \
             archive
-      
+
+          # Export the archive to an .ipa file
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
-            -exportPath build \
+            -exportPath ../../build \
             -exportOptionsPlist ExportOptions.plist
 
 
