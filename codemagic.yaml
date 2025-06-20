@@ -10,7 +10,6 @@ workflows:
         BUNDLE_ID: "com.treasurefitness.com"
       groups:
         - firebase
-        
     ios_signing:
       provisioning_profiles:
         - Tfit provision
