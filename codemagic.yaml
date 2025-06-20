@@ -7,13 +7,15 @@ workflows:
       cocoapods: default
       vars:
         DEVELOPMENT_TEAM: "X3L24943PL"
-        # Make sure your bundle ID is also a variable for consistency
         BUNDLE_ID: "com.treasurefitness.com"
       groups:
         - firebase
+        
       ios_signing:
-        distribution_type: app_store 
-        bundle_identifier: com.treasurefitness.com
+        provisioning_profiles:
+          - Tfit provision
+        certificates:
+          - tfit_cert
 
     scripts:
       - name: Install dependencies
@@ -28,23 +30,20 @@ workflows:
 
       - name: Set Development Team in Xcode project
         script: |
-          # This is the crucial step to fix the "requires a development team" error.
-          # It directly modifies the project file to insert your team ID.
           XCODE_PROJECT="ios/App/App.xcodeproj/project.pbxproj"
           sed -i.bak "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM};/g" $XCODE_PROJECT
 
       - name: Initialize keychain and set up profiles
         script: |
           keychain initialize
-          # This command uses the ios_signing section to set the correct provisioning profiles
           xcode-project use-profiles
 
       - name: Build and export iOS app
         script: |
-          # Navigate to the ios directory
           cd ios/App
 
-          # Create a dynamic ExportOptions.plist for the export step
+          # This dynamic plist is still the best way to handle the export step.
+          # It will now receive the correct values because the ios_signing section is explicit.
           cat > ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -74,7 +73,6 @@ workflows:
           echo "Generated ExportOptions.plist:"
           cat ExportOptions.plist
 
-          # Build the archive
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -82,7 +80,6 @@ workflows:
             -archivePath App.xcarchive \
             archive
 
-          # Export the archive to an .ipa file
           xcodebuild -exportArchive \
             -archivePath App.xcarchive \
             -exportPath ../../build \
