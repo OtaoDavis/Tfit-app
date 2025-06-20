@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>app-store</string>
+    <string>app-store-connect</string>
     <key>teamID</key>
     <string>X3L24943PL</string>
     <key>signingStyle</key>
@@ -13,11 +13,5 @@
         <key>com.treasurefitness.com</key>
         <string>Tfit provision</string>
     </dict>
-    <key>signingCertificate</key>
-    <string>tfit_cert</string>
-    <key>destination</key>
-    <string>export</string>
-    <key>compileBitcode</key>
-    <true/>
 </dict>
 </plist>
