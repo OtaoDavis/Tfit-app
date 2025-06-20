@@ -42,8 +42,9 @@ workflows:
         script: |
           cd ios/App
 
-          # This dynamic plist is still the best way to handle the export step.
-          # It will now receive the correct values because the ios_signing section is explicit.
+          # --- THIS IS THE CRITICAL CHANGE ---
+          # We are now using the EXACT name of your distribution certificate.
+          # This removes all ambiguity for the export command.
           cat > ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -65,13 +66,14 @@ workflows:
                   <string>${CM_PROVISIONING_PROFILE_UUID}</string>
               </dict>
               <key>signingCertificate</key>
-              <string>${CM_CERTIFICATE_COMMON_NAME}</string>
+              <string>tfit_cert</string>
           </dict>
           </plist>
           EOF
 
-          echo "Generated ExportOptions.plist:"
+          echo "--- Generated ExportOptions.plist ---"
           cat ExportOptions.plist
+          echo "------------------------------------"
 
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
