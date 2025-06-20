@@ -7,6 +7,8 @@ workflows:
       cocoapods: default
       vars:
         DEVELOPMENT_TEAM: "X3L24943PL"
+        # Make sure your bundle ID is also a variable for consistency
+        BUNDLE_ID: "com.treasurefitness.com"
       groups:
         - firebase
       ios_signing:
@@ -24,16 +26,25 @@ workflows:
           npx cap sync ios
           cd ios/App && pod install
 
-      - name: Initialize keychain
-        script: keychain initialize
+      - name: Set Development Team in Xcode project
+        script: |
+          # This is the crucial step to fix the "requires a development team" error.
+          # It directly modifies the project file to insert your team ID.
+          XCODE_PROJECT="ios/App/App.xcodeproj/project.pbxproj"
+          sed -i.bak "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM};/g" $XCODE_PROJECT
+
+      - name: Initialize keychain and set up profiles
+        script: |
+          keychain initialize
+          # This command uses the ios_signing section to set the correct provisioning profiles
+          xcode-project use-profiles
 
       - name: Build and export iOS app
         script: |
           # Navigate to the ios directory
           cd ios/App
 
-          # Create a dynamic ExportOptions.plist
-          # This uses Codemagic's environment variables to ensure the correct profile and certificate are used.
+          # Create a dynamic ExportOptions.plist for the export step
           cat > ExportOptions.plist <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -51,7 +62,7 @@ workflows:
               <true/>
               <key>provisioningProfiles</key>
               <dict>
-                  <key>${CM_BUNDLE_ID}</key>
+                  <key>${BUNDLE_ID}</key>
                   <string>${CM_PROVISIONING_PROFILE_UUID}</string>
               </dict>
               <key>signingCertificate</key>
@@ -76,7 +87,6 @@ workflows:
             -archivePath App.xcarchive \
             -exportPath ../../build \
             -exportOptionsPlist ExportOptions.plist
-
 
     artifacts:
       - build/**/*.ipa
