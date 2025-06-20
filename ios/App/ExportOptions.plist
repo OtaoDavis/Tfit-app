@@ -6,11 +6,18 @@
     <string>app-store</string>
     <key>teamID</key>
     <string>X3L24943PL</string>
-    <key>uploadBitcode</key>
-    <true/>
-    <key>compileBitcode</key>
-    <true/>
+    <key>signingStyle</key>
+    <string>manual</string>
+    <key>provisioningProfiles</key>
+    <dict>
+        <key>com.treasurefitness.com</key>
+        <string>Tfit provision</string>
+    </dict>
+    <key>signingCertificate</key>
+    <string>Apple Distribution: Roseanne Kamau (X3L24943PL)</string>
     <key>destination</key>
     <string>export</string>
+    <key>compileBitcode</key>
+    <true/>
 </dict>
 </plist>
