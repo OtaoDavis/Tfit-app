@@ -2,7 +2,6 @@ workflows:
   ios-capacitor-testflight:
     name: iOS TestFlight Build
     environment:
-      # 'ios_signing' must be a child of 'environment'
       node: 22.15.0
       xcode: latest
       cocoapods: default
@@ -63,7 +62,7 @@ workflows:
                   <string>${CM_PROVISIONING_PROFILE_UUID}</string>
               </dict>
               <key>signingCertificate</key>
-              <string>Apple Distribution: Roseanne Kamau (X3L24943PL)</string>
+              <string>tfit_cert</string>
           </dict>
           </plist>
           EOF
