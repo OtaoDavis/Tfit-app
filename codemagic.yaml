@@ -14,7 +14,7 @@ workflows:
         provisioning_profiles:
           - Tfit provision
         certificates:
-          - tfit_cert
+          - TTC_cert
 
     scripts:
       - name: Install dependencies
