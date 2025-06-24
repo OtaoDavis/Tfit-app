@@ -46,33 +46,32 @@ workflows:
 
       - name: Build and export iOS app
         script: |
-          cd ios/App
+          # Ensure we are in the correct directory for xcodebuild
+          # The archive path needs to be absolute or relative from the project root.
+          # Let's keep it relative to the Codemagic build root for consistency.
+          # The default archive path for xcodebuild is often within DerivedData,
+          # but we can specify a common one to make it explicit.
+          XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
-          # --- REMOVE the manual ExportOptions.plist generation ---
-          # cat > ExportOptions.plist <<EOF
-          # ... (all the plist content) ...
-          # EOF
-          # echo "--- Generated ExportOptions.plist ---"
-          # cat ExportOptions.plist
-          # echo "------------------------------------"
-          # --- END REMOVAL ---
-
-          # Archive the app (no change here)
-          xcodebuild -workspace App.xcworkspace \
+          echo "Archiving project..."
+          xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
-            -archivePath App.xcarchive \
-            archive
+            -archivePath "${XCARCHIVE_PATH}" \
+            archive || exit 1 # Exit on archive failure
 
-          # Export the archive using automatic signing method
-          # CodeMagic's xcode-project build-ipa will handle the ExportOptions.plist
-          # It uses the signing files fetched by app-store-connect fetch-signing-files
-          # It detects the correct method and signing certificate automatically
+          echo "Exporting IPA using Codemagic CLI..."
+          # cd back to the project root or use absolute paths for xcode-project
+          cd "${CM_BUILD_DIR}" # Ensure we are in the root directory where `App.xcarchive` is if created there.
+
           xcode-project build-ipa \
-            --archive-path App.xcarchive \
-            --export-path ../../build \
-            --distribution-type app_store # Use app_store for TestFlight/App Store
+            --archive-path "${XCARCHIVE_PATH}" \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App \
+            --ipa-directory build/ios/ipa # Specify output directory for IPA. Default is build/ios/ipa
+
+          # The artifacts section will then pick up from build/ios/ipa/*.ipa
 
     artifacts:
       - build/**/*.ipa
