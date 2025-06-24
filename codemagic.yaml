@@ -6,15 +6,12 @@ workflows:
       xcode: latest
       cocoapods: default
       vars:
-        DEVELOPMENT_TEAM: "X3L24943PL"
+        DEVELOPMENT_TEAM: "X3L24943PL" 
         BUNDLE_ID: "com.treasurefitness.com"
       groups:
         - firebase
-      ios_signing:
-        provisioning_profiles:
-          - Tfit provision
-        certificates:
-          - TTC_cert
+    integrations:
+      app_store_connect: admin_key
 
     scripts:
       - name: Install dependencies
@@ -29,48 +26,38 @@ workflows:
 
       - name: Set Development Team in Xcode project
         script: |
+          # This sed command is still fine as it sets the team ID directly in the pbxproj
           XCODE_PROJECT="ios/App/App.xcodeproj/project.pbxproj"
           sed -i.bak "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM};/g" $XCODE_PROJECT
 
-      - name: Initialize keychain and set up profiles
+      - name: Automatic Code Signing Setup
         script: |
+          # Initialize keychain
           keychain initialize
+
+          # Fetch or create signing files using App Store Connect API
+          # --type IOS_APP_STORE is for TestFlight/App Store Distribution
+          # --create will create if missing
+          app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
+
+          # Apply fetched profiles to the Xcode project
+          # This command automatically updates Xcode's signing settings
           xcode-project use-profiles
 
       - name: Build and export iOS app
         script: |
           cd ios/App
 
-          cat > ExportOptions.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>app-store-connect</string> 
-              <key>teamID</key>
-              <string>${DEVELOPMENT_TEAM}</string>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>uploadBitcode</key>
-              <true/>
-              <key>compileBitcode</key>
-              <true/>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>${BUNDLE_ID}</key>
-                  <string>${CM_PROVISIONING_PROFILE_UUID}</string>
-              </dict>
-              <key>signingCertificate</key>
-              <string>Apple Distribution: Roseanne Kamau (X3L24943PL)</string>
-          </dict>
-          </plist>
-          EOF
+          # --- REMOVE the manual ExportOptions.plist generation ---
+          # cat > ExportOptions.plist <<EOF
+          # ... (all the plist content) ...
+          # EOF
+          # echo "--- Generated ExportOptions.plist ---"
+          # cat ExportOptions.plist
+          # echo "------------------------------------"
+          # --- END REMOVAL ---
 
-          echo "--- Generated ExportOptions.plist ---"
-          cat ExportOptions.plist
-          echo "------------------------------------"
-
+          # Archive the app (no change here)
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -78,10 +65,14 @@ workflows:
             -archivePath App.xcarchive \
             archive
 
-          xcodebuild -exportArchive \
-            -archivePath App.xcarchive \
-            -exportPath ../../build \
-            -exportOptionsPlist ExportOptions.plist
+          # Export the archive using automatic signing method
+          # CodeMagic's xcode-project build-ipa will handle the ExportOptions.plist
+          # It uses the signing files fetched by app-store-connect fetch-signing-files
+          # It detects the correct method and signing certificate automatically
+          xcode-project build-ipa \
+            --archive-path App.xcarchive \
+            --export-path ../../build \
+            --distribution-type app_store # Use app_store for TestFlight/App Store
 
     artifacts:
       - build/**/*.ipa
