@@ -22,35 +22,23 @@ workflows:
       - name: Capacitor Sync and Pod Install
         script: |
           npx cap sync ios
-          cd ios/App && pod install
-
-      - name: Set Development Team in Xcode project
-        script: |
-          # This sed command is still fine as it sets the team ID directly in the pbxproj
-          XCODE_PROJECT="ios/App/App.xcodeproj/project.pbxproj"
-          sed -i.bak "s/DEVELOPMENT_TEAM = .*/DEVELOPMENT_TEAM = ${DEVELOPMENT_TEAM};/g" $XCODE_PROJECT
-
+          cd ios/App && pod Install
+          
       - name: Automatic Code Signing Setup
         script: |
-          # Initialize keychain
           keychain initialize
 
-          # Fetch or create signing files using App Store Connect API
-          # --type IOS_APP_STORE is for TestFlight/App Store Distribution
-          # --create will create if missing
+          # Fetch or create signing files. This also implicitly configures the development team.
           app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
 
-          # Apply fetched profiles to the Xcode project
-          # This command automatically updates Xcode's signing settings
-          xcode-project use-profiles
+          # Use profiles. This step should properly apply the development team and signing settings.
+          # We provide the workspace and scheme explicitly here to ensure it's targeting the right project.
+          xcode-project use-profiles \
+            --workspace ios/App/App.xcworkspace \
+            --scheme App
 
       - name: Build and export iOS app
         script: |
-          # Ensure we are in the correct directory for xcodebuild
-          # The archive path needs to be absolute or relative from the project root.
-          # Let's keep it relative to the Codemagic build root for consistency.
-          # The default archive path for xcodebuild is often within DerivedData,
-          # but we can specify a common one to make it explicit.
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
           echo "Archiving project..."
@@ -59,19 +47,16 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            archive || exit 1 # Exit on archive failure
+            archive || exit 1
 
           echo "Exporting IPA using Codemagic CLI..."
-          # cd back to the project root or use absolute paths for xcode-project
-          cd "${CM_BUILD_DIR}" # Ensure we are in the root directory where `App.xcarchive` is if created there.
+          cd "${CM_BUILD_DIR}" # Ensure we are in the root directory for xcode-project build-ipa
 
           xcode-project build-ipa \
             --archive-path "${XCARCHIVE_PATH}" \
             --workspace ios/App/App.xcworkspace \
             --scheme App \
-            --ipa-directory build/ios/ipa # Specify output directory for IPA. Default is build/ios/ipa
-
-          # The artifacts section will then pick up from build/ios/ipa/*.ipa
+            --ipa-directory build/ios/ipa
 
     artifacts:
       - build/**/*.ipa
