@@ -62,7 +62,7 @@ workflows:
                   <string>${CM_PROVISIONING_PROFILE_UUID}</string>
               </dict>
               <key>signingCertificate</key>
-              <string>tfit_cert</string>
+              <string>Apple Distribution: Roseanne Kamau (X3L24943PL)</string>
           </dict>
           </plist>
           EOF
