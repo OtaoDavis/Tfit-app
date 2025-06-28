@@ -26,23 +26,20 @@ workflows:
 
       - name: Automatic Code Signing Setup
         script: |
-          # Initialize a new keychain for code signing
           keychain initialize
 
-          # Fetch or create signing files using the App Store Connect API key
-          # The 'app-store-connect' tool will use the API key configured in 'integrations'.
-          # It will automatically place the fetched certificate and provisioning profile
-          # into the keychain initialized above.
           app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
 
-          # Change to the iOS project directory so xcode-project can find the workspace
+          # Change to the iOS project directory
           cd ios/App
 
-          # Use profiles. This step reads your Xcode project settings and applies
-          # the fetched provisioning profiles to the correct targets within your project.
-          xcode-project use-profiles 
+          # Use profiles AND explicitly set the DEVELOPMENT_TEAM for the target
+          # This ensures the project knows which team to associate with the signing.
+          xcode-project use-profiles \
+            --set-development-team "${DEVELOPMENT_TEAM}" \
+            --project "App.xcodeproj" # Explicitly target your .xcodeproj
 
-          # Change back to the root directory for subsequent commands
+          # Change back to the root directory
           cd ../..
 
       - name: Build and export iOS app
