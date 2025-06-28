@@ -51,9 +51,9 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \ 
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
-            archive || exit 1 
+            archive || exit 1
 
           echo "Exporting IPA using Codemagic CLI..."
           cd "${CM_BUILD_DIR}"
