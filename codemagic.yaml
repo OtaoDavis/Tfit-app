@@ -46,13 +46,12 @@ workflows:
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
           echo "Archiving project..."
-          # Ensure NO extra spaces after the backslash '\' at the end of each line
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            CODE_SIGN_IDENTITY="Apple Distribution" \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \ 
             DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             archive || exit 1 
 
