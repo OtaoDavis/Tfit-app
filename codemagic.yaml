@@ -11,7 +11,10 @@ workflows:
       groups:
         - firebase
     integrations:
-      app_store_connect: admin_key
+      # We can remove the app_store_connect integration if it's ONLY used for code signing
+      # However, if you also use it for publishing to App Store Connect, keep it.
+      # For manual code signing, it's not strictly necessary for the build step.
+      # app_store_connect: admin_key 
 
     scripts:
       - name: Install dependencies
@@ -24,18 +27,26 @@ workflows:
           npx cap sync ios
           cd ios/App && pod install
 
-      - name: Automatic Code Signing Setup
+      - name: Code Signing Setup 
         script: |
           keychain initialize
 
-          # Fetch or create signing files. This also implicitly configures the development team.
-          app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
+          # --- REMOVED: app-store-connect fetch-signing-files ---
+          # With manual code signing, Codemagic will make the uploaded .p12 and .mobileprovision
+          # files available in the build environment automatically.
+          # The 'keychain initialize' sets up the keychain where these will be placed.
+
+          # Change to the directory where your Xcode project/workspace resides
+          # This is still important for 'xcode-project use-profiles' to find the project correctly.
+          cd ios/App
 
           # Use profiles. This step should properly apply the development team and signing settings.
-          # We provide the workspace and scheme explicitly here to ensure it's targeting the right project.
-          xcode-project use-profiles \
-            --workspace ios/App/App.xcworkspace \
-            --scheme App
+          # It will now use the provisioning profiles uploaded to Codemagic.
+          # No --workspace or --scheme arguments needed for use-profiles.
+          xcode-project use-profiles
+
+          # Change back to the root directory for subsequent commands
+          cd ../..
 
       - name: Build and export iOS app
         script: |
