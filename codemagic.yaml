@@ -11,7 +11,7 @@ workflows:
       groups:
         - firebase 
     integrations:
-      app_store_connect: MyNewAppManagerKey 
+      app_store_connect: Codemagic app manager 
 
     scripts:
       - name: Install dependencies
