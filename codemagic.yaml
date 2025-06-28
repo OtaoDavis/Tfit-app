@@ -11,7 +11,7 @@ workflows:
       groups:
         - firebase 
     integrations:
-      app_store_connect: Codemagic app manager
+      app_store_connect: MyNewAppManagerKey 
 
     scripts:
       - name: Install dependencies
@@ -30,14 +30,14 @@ workflows:
 
           app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
 
-          # Change to the iOS project directory
+          # Change to the iOS project directory (still needed for pod files)
           cd ios/App
 
-          # Use profiles AND explicitly set the DEVELOPMENT_TEAM for the target
-          # This ensures the project knows which team to associate with the signing.
-          xcode-project use-profiles \
-            --set-development-team "${DEVELOPMENT_TEAM}" \
-            --project "App.xcodeproj" # Explicitly target your .xcodeproj
+          # Use profiles: this step ensures the fetched certificate and provisioning profile
+          # are properly installed and linked to the project for signing.
+          # We're removing the --set-development-team and --project here,
+          # as we'll pass the team directly to xcodebuild.
+          xcode-project use-profiles 
 
           # Change back to the root directory
           cd ../..
@@ -47,25 +47,29 @@ workflows:
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
           echo "Archiving project..."
-          # xcodebuild will now use the signing identities applied by xcode-project use-profiles
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
+            # IMPORTANT: Add these build settings directly to the xcodebuild command
+            # This explicitly tells xcodebuild which team to use for signing.
+            DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
+            # Optional: You can also specify the code signing identity if needed,
+            # but often DEVELOPMENT_TEAM is enough with automatic signing.
+            # CODE_SIGN_IDENTITY="Apple Distribution" \
             archive || exit 1
 
           echo "Exporting IPA using Codemagic CLI..."
-          # Ensure we are in the root directory for xcode-project build-ipa if needed,
-          # or adjust paths if it expects to be in the ios/App directory.
-          # CM_BUILD_DIR is the root of your cloned repository.
-          cd "${CM_BUILD_DIR}" 
+          cd "${CM_BUILD_DIR}"
 
           xcode-project build-ipa \
             --archive-path "${XCARCHIVE_PATH}" \
             --workspace ios/App/App.xcworkspace \
             --scheme App \
             --ipa-directory build/ios/ipa
+            # No need to pass DEVELOPMENT_TEAM here, as it was set during archive.
+            # If you were getting signing errors during export, you might add it here too.
 
     artifacts:
       - build/**/*.ipa
