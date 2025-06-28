@@ -11,10 +11,7 @@ workflows:
       groups:
         - firebase
     integrations:
-      # We can remove the app_store_connect integration if it's ONLY used for code signing
-      # However, if you also use it for publishing to App Store Connect, keep it.
-      # For manual code signing, it's not strictly necessary for the build step.
-      # app_store_connect: admin_key 
+      app_store_connect: admin_key 
 
     scripts:
       - name: Install dependencies
