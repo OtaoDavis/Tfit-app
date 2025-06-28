@@ -30,17 +30,22 @@ workflows:
 
           app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
 
-          # Change to the iOS project directory (still needed for pod files)
+          # Change to the iOS project directory for xcode-project commands
           cd ios/App
 
-          # Use profiles: this step ensures the fetched certificate and provisioning profile
-          # are properly installed and linked to the project for signing.
-          # We're removing the --set-development-team and --project here,
-          # as we'll pass the team directly to xcodebuild.
-          xcode-project use-profiles 
+          # Explicitly update the DEVELOPMENT_TEAM build setting for the Release configuration
+          # of the 'App' target directly in project.pbxproj
+          xcode-project update-build-settings \
+            --target App \
+            --configuration Release \
+            --setting DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
+            # Make sure this path is correct relative to where you run the command (ios/App)
+            App.xcodeproj 
 
-          # Change back to the root directory
-          cd ../..
+          # Use profiles: This will link the fetched certificate and profile.
+          xcode-project use-profiles 
+          
+          cd ../.. # Change back to the repository root
 
       - name: Build and export iOS app
         script: |
@@ -52,13 +57,9 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            # IMPORTANT: Add these build settings directly to the xcodebuild command
-            # This explicitly tells xcodebuild which team to use for signing.
-            DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
-            # Optional: You can also specify the code signing identity if needed,
-            # but often DEVELOPMENT_TEAM is enough with automatic signing.
-            # CODE_SIGN_IDENTITY="Apple Distribution" \
-            archive || exit 1
+            CODE_SIGN_IDENTITY="Apple Distribution" \ # Still keep this, it helps
+            DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \ # Still keep this as a safeguard
+            archive || exit 1 # Don't forget the backslash!
 
           echo "Exporting IPA using Codemagic CLI..."
           cd "${CM_BUILD_DIR}"
@@ -68,8 +69,3 @@ workflows:
             --workspace ios/App/App.xcworkspace \
             --scheme App \
             --ipa-directory build/ios/ipa
-            # No need to pass DEVELOPMENT_TEAM here, as it was set during archive.
-            # If you were getting signing errors during export, you might add it here too.
-
-    artifacts:
-      - build/**/*.ipa
