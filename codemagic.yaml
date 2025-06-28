@@ -9,9 +9,9 @@ workflows:
         DEVELOPMENT_TEAM: "X3L24943PL" 
         BUNDLE_ID: "com.treasurefitness.com"
       groups:
-        - firebase
+        - firebase 
     integrations:
-      app_store_connect: admin_key 
+      app_store_connect: Codemagic app manager
 
     scripts:
       - name: Install dependencies
@@ -24,23 +24,23 @@ workflows:
           npx cap sync ios
           cd ios/App && pod install
 
-      - name: Code Signing Setup 
+      - name: Automatic Code Signing Setup
         script: |
+          # Initialize a new keychain for code signing
           keychain initialize
 
-          # --- REMOVED: app-store-connect fetch-signing-files ---
-          # With manual code signing, Codemagic will make the uploaded .p12 and .mobileprovision
-          # files available in the build environment automatically.
-          # The 'keychain initialize' sets up the keychain where these will be placed.
+          # Fetch or create signing files using the App Store Connect API key
+          # The 'app-store-connect' tool will use the API key configured in 'integrations'.
+          # It will automatically place the fetched certificate and provisioning profile
+          # into the keychain initialized above.
+          app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
 
-          # Change to the directory where your Xcode project/workspace resides
-          # This is still important for 'xcode-project use-profiles' to find the project correctly.
+          # Change to the iOS project directory so xcode-project can find the workspace
           cd ios/App
 
-          # Use profiles. This step should properly apply the development team and signing settings.
-          # It will now use the provisioning profiles uploaded to Codemagic.
-          # No --workspace or --scheme arguments needed for use-profiles.
-          xcode-project use-profiles
+          # Use profiles. This step reads your Xcode project settings and applies
+          # the fetched provisioning profiles to the correct targets within your project.
+          xcode-project use-profiles 
 
           # Change back to the root directory for subsequent commands
           cd ../..
@@ -50,6 +50,7 @@ workflows:
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
           echo "Archiving project..."
+          # xcodebuild will now use the signing identities applied by xcode-project use-profiles
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
@@ -58,7 +59,10 @@ workflows:
             archive || exit 1
 
           echo "Exporting IPA using Codemagic CLI..."
-          cd "${CM_BUILD_DIR}" # Ensure we are in the root directory for xcode-project build-ipa
+          # Ensure we are in the root directory for xcode-project build-ipa if needed,
+          # or adjust paths if it expects to be in the ios/App directory.
+          # CM_BUILD_DIR is the root of your cloned repository.
+          cd "${CM_BUILD_DIR}" 
 
           xcode-project build-ipa \
             --archive-path "${XCARCHIVE_PATH}" \
