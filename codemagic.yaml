@@ -44,25 +44,25 @@ workflows:
       - name: Build and export iOS app
         script: |
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
-      
+
           echo "Archiving project..."
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            -allowProvisioningUpdates \
+            CODE_SIGN_IDENTITY="iPhone Distribution" \
+            DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             archive || exit 1
-      
+
           echo "Exporting IPA using Codemagic CLI..."
           cd "${CM_BUILD_DIR}"
-      
+
           xcode-project build-ipa \
             --archive-path "${XCARCHIVE_PATH}" \
             --workspace ios/App/App.xcworkspace \
             --scheme App \
             --ipa-directory build/ios/ipa
-
 
     artifacts:
       - build/**/*.ipa
