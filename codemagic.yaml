@@ -50,6 +50,7 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
+            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             archive || exit 1
 
