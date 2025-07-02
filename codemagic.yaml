@@ -1,17 +1,15 @@
 workflows:
-  ios-capacitor-testflight:
-    name: iOS TestFlight Build
+  ios-manual-signing:
+    name: iOS Manual Signing Build
     environment:
-      node: 22.15.0
       xcode: latest
-      cocoapods: default
-      vars:
-        DEVELOPMENT_TEAM: "X3L24943PL" 
-        BUNDLE_ID: "com.treasurefitness.com"
-      groups:
-        - firebase 
-    integrations:
-      app_store_connect: Codemagic app manager 
+    certificates:
+      - TTC_cert
+    provisioning_profiles:
+      - Tfit provision
+    vars:
+      BUNDLE_ID: "com.treasurefitness.com"
+      DEVELOPMENT_TEAM: "X3L24943PL"
 
     scripts:
       - name: Install dependencies
@@ -19,28 +17,34 @@ workflows:
           npm ci
           npm run build
 
-      - name: Capacitor Sync and Pod Install
+      - name: Capacitor Sync & Pod Install
         script: |
           npx cap sync ios
           cd ios/App && pod install
 
-      - name: Automatic Code Signing Setup
+      - name: Setup keychain & manual signing
         script: |
           keychain initialize
 
-          app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
+          echo "Fetching uploaded signing files..."
+          app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE
 
           cd ios/App
 
+          echo "Forcing CODE_SIGN_STYLE to Manual..."
           xcode-project update-build-settings \
             --target App \
             --configuration Release \
+            --setting CODE_SIGN_STYLE=Manual \
             --setting DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             App.xcodeproj
 
+          echo "Attaching uploaded provisioning profile..."
+          xcode-project use-profiles
+
           cd ../..
 
-      - name: Build and export iOS app
+      - name: Archive and export IPA
         script: |
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
@@ -50,13 +54,11 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            -allowProvisioningUpdates \
             DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             archive || exit 1
 
-          echo "Exporting IPA using Codemagic CLI..."
+          echo "Exporting IPA..."
           cd "${CM_BUILD_DIR}"
-
           xcode-project build-ipa \
             --archive-path "${XCARCHIVE_PATH}" \
             --workspace ios/App/App.xcworkspace \
@@ -64,4 +66,4 @@ workflows:
             --ipa-directory build/ios/ipa
 
     artifacts:
-      - build/**/*.ipa
+      - build/ios/ipa/*.ipa
