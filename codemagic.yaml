@@ -29,17 +29,16 @@ workflows:
           keychain initialize
 
           app-store-connect fetch-signing-files "${BUNDLE_ID}" --type IOS_APP_STORE --create
+
           cd ios/App
 
           xcode-project update-build-settings \
             --target App \
             --configuration Release \
             --setting DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
-            App.xcodeproj 
+            App.xcodeproj
 
-          xcode-project use-profiles 
-          
-          cd ../.. 
+          cd ../..
 
       - name: Build and export iOS app
         script: |
@@ -51,7 +50,6 @@ workflows:
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
             DEVELOPMENT_TEAM="${DEVELOPMENT_TEAM}" \
             archive || exit 1
 
