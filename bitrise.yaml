@@ -1,0 +1,52 @@
+format_version: '11'
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+project_type: other
+
+workflows:
+  primary:
+    steps:
+      - activate-ssh-key@4: {}
+      - git-clone@8: {}
+
+      # Optional: Pull caches to speed up builds
+      - cache-pull@2: {}
+
+      # Install Node modules for Capacitor/Ionic
+      - npm@1:
+          inputs:
+            - command: install
+
+      # Run Capacitor sync to update native iOS project
+      - script@1:
+          title: "Capacitor Sync"
+          inputs:
+            - content: |
+                #!/bin/bash
+                npx cap sync ios
+
+      # Install CocoaPods for native deps
+      - cocoapods-install@2: {}
+
+      # Install signing certs and provisioning profile
+      - certificate-and-profile-installer@1: {}
+
+      # Archive & export signed .ipa for App Store Connect
+      - xcode-archive@4:
+          inputs:
+            - project_path: "ios/App/App.xcworkspace"  
+            - scheme: "App"                            
+            - configuration: "Release"
+            - export_method: "app-store"
+
+      # Upload to App Store Connect automatically 
+      - deploy-to-itunesconnect-deliver@2:
+          inputs:
+            - ipa_path: "$BITRISE_IPA_PATH"
+            - submit_for_review: "no"  
+
+      # Upload artifacts to Bitrise too
+      - deploy-to-bitrise-io@2: {}
+
+      # Optional: Push caches
+      - cache-push@2: {}
