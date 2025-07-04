@@ -6,7 +6,8 @@ project_type: other
 workflows:
   primary:
     steps:
-      - activate-ssh-key@4: {}
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
       - git-clone@8: {}
 
       # Optional: Pull caches to speed up builds
@@ -34,19 +35,32 @@ workflows:
       # Archive & export signed .ipa for App Store Connect
       - xcode-archive@4:
           inputs:
-            - project_path: "ios/App/App.xcworkspace"  
-            - scheme: "App"                            
+            - project_path: "ios/App/App.xcworkspace"
+            - scheme: "App"
             - configuration: "Release"
             - export_method: "app-store"
 
-      # Upload to App Store Connect automatically 
+      # Upload to App Store Connect automatically
       - deploy-to-itunesconnect-deliver@2:
           inputs:
             - ipa_path: "$BITRISE_IPA_PATH"
-            - submit_for_review: "no"  
+            - submit_for_review: "no"
 
       # Upload artifacts to Bitrise too
       - deploy-to-bitrise-io@2: {}
 
       # Optional: Push caches
       - cache-push@2: {}
+
+# 👇 This section ensures your workflow is triggered on push/PR
+triggers:
+  - push_branch: master
+    workflow: primary
+  - pull_request_source_branch: "*"
+    workflow: primary
+
+# 👇 This ensures your build stack is defined
+meta:
+  bitrise.io:
+    stack: osx-xcode-16.0.x
+    machine_type_id: g2.mac.large
