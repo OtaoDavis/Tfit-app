@@ -36,7 +36,7 @@ workflows:
       - xcode-archive@4:
           inputs:
             - project_path: "ios/App/App.xcworkspace"
-            - scheme: "App"
+            - scheme: "app"
             - configuration: "Release"
             - export_method: "app-store"
 
