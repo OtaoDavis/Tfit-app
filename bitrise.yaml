@@ -32,6 +32,11 @@ workflows:
       # Install signing certs and provisioning profile
       - certificate-and-profile-installer@1: {}
 
+      - ios-auto-provision-appstoreconnect@1:
+          inputs:
+            - distribution_type: app-store
+
+
       # Archive & export signed .ipa for App Store Connect
       - xcode-archive@4:
           inputs:
