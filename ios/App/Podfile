@@ -18,7 +18,7 @@ def capacitor_pods
 end
 
 target 'App' do
-  project 'App/App.xcodeproj' 
+  project 'App.xcodeproj' 
   capacitor_pods
   # Add your Pods here
 end
