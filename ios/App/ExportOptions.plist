@@ -3,15 +3,21 @@
 <plist version="1.0">
 <dict>
     <key>method</key>
-    <string>app-store</string> 
+    <string>app-store</string>
+
     <key>teamID</key>
-    <string>X3L24943PL</string> 
+    <string>X3L24943PL</string>
+
     <key>signingCertificate</key>
-    <string>Apple Development</string>
+    <string>Apple Distribution</string>
+
     <key>provisioningProfiles</key>
     <dict>
         <key>com.treasurefitness.com</key>
-        <string>tfit_bitrise_provision</string> 
+        <string>tfit_bitrise_provision</string>
     </dict>
+
+    <key>compileBitcode</key>
+    <true/>
 </dict>
 </plist>
