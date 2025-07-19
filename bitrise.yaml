@@ -42,8 +42,8 @@ workflows:
       # Archive & export signed .ipa for App Store Connect
       - xcode-archive@4:
           inputs:
-            - project_path: "ios/App.xcworkspace"
-            - scheme: "app"
+            - project_path: "ios/App/App.xcworkspace"
+            - scheme: "App"
             - configuration: "Release"
             - export_method: "app-store"
 
