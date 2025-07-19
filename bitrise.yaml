@@ -36,8 +36,8 @@ workflows:
       - manage-ios-code-signing@1:
           inputs:
             - distribution_method: "app-store"
-            - project_path: "ios/App.xcworkspace"
-            - scheme: "app"
+            - project_path: "ios/App/App.xcworkspace"
+            - scheme: "App"
 
       # Archive & export signed .ipa for App Store Connect
       - xcode-archive@4:
