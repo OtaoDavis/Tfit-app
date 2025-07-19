@@ -29,18 +29,20 @@ workflows:
       # Install CocoaPods for native deps
       - cocoapods-install@2: {}
 
-      # Install signing certs and provisioning profile
+      # Install signing certs and provisioning profiles
       - certificate-and-profile-installer@1: {}
 
-      - ios-auto-provision-appstoreconnect@1:
+      # NEW: Manage iOS Code Signing (replaces deprecated auto-provision step)
+      - manage-ios-code-signing@1:
           inputs:
-            - distribution_type: app-store
-
+            - distribution_method: "app-store"
+            - project_path: "ios/App.xcworkspace"
+            - scheme: "app"
 
       # Archive & export signed .ipa for App Store Connect
       - xcode-archive@4:
           inputs:
-            - project_path: "ios/App/App.xcworkspace"
+            - project_path: "ios/App.xcworkspace"
             - scheme: "app"
             - configuration: "Release"
             - export_method: "app-store"
@@ -57,14 +59,12 @@ workflows:
       # Optional: Push caches
       - cache-push@2: {}
 
-# 👇 This section ensures your workflow is triggered on push/PR
 triggers:
   - push_branch: master
     workflow: primary
   - pull_request_source_branch: "*"
     workflow: primary
 
-# 👇 This ensures your build stack is defined
 meta:
   bitrise.io:
     stack: osx-xcode-16.0.x
