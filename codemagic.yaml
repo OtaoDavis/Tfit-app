@@ -3,6 +3,8 @@ workflows:
     name: iOS Manual Signing Build
     environment:
       xcode: latest
+      groups:
+        - firebase_config # Or whatever you named your group
 
     integrations:
       app_store_connect: Codemagic app manager
@@ -24,9 +26,6 @@ workflows:
           keychain initialize
 
           # Import uploaded .p12 and provisioning profile
-          # Codemagic auto-injects files named exactly like your uploaded names
-          # TTC_cert.p12 and Tfit_provision.mobileprovision
-
           keychain add-certificates
 
           # Attach provisioning profile
