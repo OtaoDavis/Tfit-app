@@ -7,7 +7,7 @@ workflows:
         - firebase
 
     integrations:
-      app_store_connect: Codemagic app manager
+      app_store_connect: App Store API
 
     scripts:
       - name: Install dependencies
