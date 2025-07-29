@@ -24,9 +24,9 @@ export default function NutritionPage() {
       <div className="space-y-12">
         <section id="meal-scanner">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Meal Scanner</h2>
-          <p className="text-muted-foreground mb-6">
+          {/* <p className="text-muted-foreground mb-6">
             Upload an image of your meal to get an estimate of its nutritional content. 
-          </p>
+          </p> */}
           <MealScanner />
         </section>
         
@@ -34,9 +34,9 @@ export default function NutritionPage() {
 
         <section id="water-tracker">
           <h2 className="text-2xl font-semibold mb-4 text-foreground">Water Tracker</h2>
-          <p className="text-muted-foreground mb-6">
+          {/* <p className="text-muted-foreground mb-6">
             Monitor your daily water intake to stay hydrated. Your data is saved locally in your browser.
-          </p>
+          </p> */}
           <WaterTracker />
         </section>
       </div>

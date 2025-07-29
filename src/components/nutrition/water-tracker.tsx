@@ -3,9 +3,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { MinusCircle, PlusCircle, Droplet, Edit3, History } from 'lucide-react';
+import { Minus, Plus, Droplet, Edit3, History, GlassWater } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -16,9 +15,11 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { format, parseISO, startOfDay } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 const DEFAULT_GOAL_ML = 2000;
 const GLASS_SIZE_ML = 250;
+const NUMBER_OF_GLASSES = 8;
 
 const WATER_LOG_KEY = 'waterIntakeLog_v2'; // Store array of daily logs
 const USER_PREF_GOAL_KEY = 'waterUserPrefGoal_v1'; // Store user's preferred goal for new days
@@ -143,6 +144,10 @@ export function WaterTracker() {
 
   const todayData = getTodaysData();
   const progressPercentage = todayData.goalMl > 0 ? (todayData.intakeMl / todayData.goalMl) * 100 : 0;
+  
+  const amountPerGlass = todayData.goalMl / NUMBER_OF_GLASSES;
+  const glassesFilled = amountPerGlass > 0 ? Math.floor(todayData.intakeMl / amountPerGlass) : 0;
+
 
   if (!isMounted) {
     return (
@@ -155,7 +160,6 @@ export function WaterTracker() {
         </CardHeader>
         <CardContent className="flex flex-col items-center space-y-4">
           <p className="text-muted-foreground">Loading water tracker...</p>
-          <Progress value={0} className="w-full h-4" />
         </CardContent>
       </Card>
     );
@@ -168,7 +172,7 @@ export function WaterTracker() {
           <CardTitle className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Droplet className="h-6 w-6 text-primary" />
-              Today&apos;s Hydration
+              Today's Hydration
             </div>
             <Dialog>
               <DialogTrigger asChild>
@@ -207,44 +211,54 @@ export function WaterTracker() {
             </Dialog>
           </CardTitle>
           <CardDescription>
-            {todayData.intakeMl} ml / {todayData.goalMl} ml ({Math.round(progressPercentage)}%)
+            {todayData.intakeMl.toLocaleString()} ml / {todayData.goalMl.toLocaleString()} ml ({Math.round(progressPercentage)}%)
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col items-center space-y-6">
-          <Progress value={progressPercentage} className="w-full h-4 rounded-full" />
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
+        <CardContent className="flex flex-col items-center space-y-4">
+           <div className="flex justify-center items-center gap-2 flex-wrap" aria-label={`${glassesFilled} out of ${NUMBER_OF_GLASSES} glasses filled`}>
+            {Array.from({ length: NUMBER_OF_GLASSES }).map((_, index) => (
+              <GlassWater
+                key={index}
+                className={cn(
+                  "h-8 w-8 transition-colors duration-300",
+                  index < glassesFilled ? "text-primary" : "text-muted-foreground/30"
+                )}
+              />
+            ))}
+          </div>
+          <div className="flex items-center justify-center gap-2 w-full">
             <Button
               onClick={() => removeWater(GLASS_SIZE_ML)}
               variant="outline"
-              size="lg"
-              className="flex items-center gap-2 w-full sm:w-auto"
+              size="default"
+              className="flex items-center gap-2"
               aria-label={`Remove ${GLASS_SIZE_ML}ml`}
               disabled={todayData.intakeMl === 0}
             >
-              <MinusCircle className="h-5 w-5" />
-              Remove Glass ({GLASS_SIZE_ML}ml)
+              <Minus className="h-4 w-4" />
+              <span>Glass</span>
             </Button>
             <Button
               onClick={() => addWater(GLASS_SIZE_ML)}
               variant="default"
-              size="lg"
-              className="flex items-center gap-2 w-full sm:w-auto"
+              size="default"
+              className="flex items-center gap-2"
               aria-label={`Add ${GLASS_SIZE_ML}ml`}
             >
-              <PlusCircle className="h-5 w-5" />
-              Add Glass ({GLASS_SIZE_ML}ml)
+              <Plus className="h-4 w-4" />
+              <span>Glass</span>
             </Button>
           </div>
-          <div className="flex flex-col sm:flex-row items-end gap-2 w-full max-w-xs">
+          <div className="flex items-end gap-2 w-full max-w-sm mx-auto">
             <div className="flex-grow">
-              <Label htmlFor="custom-amount" className="text-sm text-muted-foreground">Custom Amount (ml)</Label>
+              <Label htmlFor="custom-amount" className="text-sm text-muted-foreground">Custom (ml)</Label>
               <Input
                 id="custom-amount"
                 type="number"
                 value={customAmount}
                 onChange={(e) => setCustomAmount(e.target.value)}
                 min="1"
-                className="mt-1"
+                className="mt-1 h-9"
               />
             </div>
             <Button
@@ -253,15 +267,15 @@ export function WaterTracker() {
                 if (!isNaN(amount) && amount > 0) addWater(amount);
               }}
               variant="secondary"
-              className="w-full sm:w-auto"
+              className="h-9"
               aria-label="Add custom amount"
             >
-              Add Custom
+              Add
             </Button>
           </div>
         </CardContent>
-        <CardFooter className="text-xs text-muted-foreground justify-center">
-          <p>Tip: Aim for {todayData.goalMl / 1000} liters per day!</p>
+        <CardFooter className="text-xs text-muted-foreground justify-center pt-4">
+          <p>Goal: {todayData.goalMl / 1000} liters</p>
         </CardFooter>
       </Card>
 
@@ -290,10 +304,9 @@ export function WaterTracker() {
                     <div className="p-4 border-t bg-background text-sm">
                       <p>Intake: <span className="font-semibold">{entry.intakeMl} ml</span></p>
                       <p>Goal: <span className="font-semibold">{entry.goalMl} ml</span></p>
-                      <Progress 
-                        value={(entry.intakeMl / entry.goalMl) * 100} 
-                        className="w-full h-3 mt-2" 
-                      />
+                      <div className="w-full bg-secondary rounded-full h-2.5 mt-2">
+                          <div className="bg-primary h-2.5 rounded-full" style={{ width: `${(entry.intakeMl / entry.goalMl) * 100}%` }}></div>
+                      </div>
                     </div>
                   </AccordionContent>
                 </AccordionItem>

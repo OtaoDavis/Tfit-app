@@ -19,6 +19,7 @@
     "open:ios": "capacitor open ios"
   },
   "dependencies": {
+    "@capawesome/capacitor-app-update": "^6.0.0",
     "@capacitor/android": "^6.0.0",
     "@capacitor/camera": "^6.0.0",
     "@capacitor/core": "^6.0.0",
