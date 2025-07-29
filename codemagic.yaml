@@ -1,13 +1,13 @@
 workflows:
-  ios-manual-signing:
-    name: iOS Manual Signing Build
+  ios-automatic-signing:
+    name: iOS Automatic Signing Build
     environment:
       xcode: latest
       groups:
         - firebase
 
     integrations:
-      app_store_connect: App Store API
+      app_store_connect: App Store API 
 
     scripts:
       - name: Install dependencies
@@ -20,49 +20,30 @@ workflows:
           npx cap sync ios
           cd ios/App && pod install
 
-      - name: Setup keychain & manual signing
+      - name: Build and export IPA
         script: |
-          # Initialize keychain
-          keychain initialize
+          # This script uses automatic code signing
+          set -x # To print executed commands
 
-          # Import uploaded .p12 and provisioning profile
-          keychain add-certificates
-
-          # Attach provisioning profile
-          app-store-connect fetch-signing-files "com.treasurefitness.com" --type IOS_APP_STORE --create || true
-
-          cd ios/App
-
-          echo "Forcing CODE_SIGN_STYLE to Manual..."
-          xcode-project update-build-settings \
-            --target App \
-            --configuration Release \
-            --setting CODE_SIGN_STYLE=Manual \
-            --setting DEVELOPMENT_TEAM="X3L24943PL" \
-            App.xcodeproj
-
-          xcode-project use-profiles
-
-          cd ../..
-
-      - name: Archive and export IPA
-        script: |
+          # Define the archive path
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
 
-          echo "Archiving project..."
+          # Archive the project
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            DEVELOPMENT_TEAM="X3L24943PL" \
-            archive || exit 1
+            archive
 
-          echo "Exporting IPA with ExportOptions.plist..."
+          # Export the archive into an IPA
           xcodebuild -exportArchive \
             -archivePath "${XCARCHIVE_PATH}" \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath "${CM_BUILD_DIR}/build/ios/ipa"
+            -exportPath "${CM_BUILD_DIR}/build/ios/ipa" \
+            -exportOptionsPlist "ExportOptions.plist" # This file is required
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa 
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
