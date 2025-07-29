@@ -40,7 +40,7 @@ workflows:
           xcodebuild -exportArchive \
             -archivePath "${XCARCHIVE_PATH}" \
             -exportPath "${CM_BUILD_DIR}/build/ios/ipa" \
-            -exportOptionsPlist "ExportOptions.plist" # This file is required
+            -exportOptionsPlist "ExportOptions.plist"
 
     artifacts:
       - build/ios/ipa/*.ipa 
