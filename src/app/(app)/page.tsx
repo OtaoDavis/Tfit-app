@@ -15,7 +15,7 @@ export default function HomePage() {
     {
       title: 'Mindset',
       icon: Brain,
-      href: '/#', 
+      href: '/mindset',
       description: 'Cultivate a resilient and positive mindset for lasting change.',
     },
     {
@@ -26,9 +26,9 @@ export default function HomePage() {
     },
     {
       title: 'Wellness', 
-      icon: Activity,   
+      icon: Activity,    
       href: '/movement',
-      description: 'Track sleep, habits, steps, and manage stress for holistic wellbeing.', 
+      description: 'Track sleep, habits, steps, and manage stress for holistic wellbeing.', // Updated description
     },
     {
       title: 'Community',
@@ -67,4 +67,3 @@ export default function HomePage() {
     </div>
   );
 }
-

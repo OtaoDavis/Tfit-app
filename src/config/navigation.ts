@@ -1,12 +1,13 @@
+
 import type { LucideIcon } from 'lucide-react';
-import { Home, Apple, Users, UserCircle, Settings, Info, Activity } from 'lucide-react'; // Changed Dumbbell to Activity
+import { Home, Apple, Users, UserCircle, Settings, Info, Activity, Brain } from 'lucide-react';
 
 export interface NavItem {
   title: string;
   href: string;
   icon: LucideIcon;
   label?: string;
-  matchSegments?: number; // Number of path segments to match for active state
+  matchSegments?: number; 
 }
 
 export const mainNavItems: NavItem[] = [
@@ -17,15 +18,21 @@ export const mainNavItems: NavItem[] = [
     matchSegments: 0, // Exact match for root
   },
   {
+    title: 'Mindset',
+    href: '/mindset',
+    icon: Brain,
+    matchSegments: 1,
+  },
+  {
     title: 'Nutrition',
     href: '/nutrition',
     icon: Apple,
     matchSegments: 1,
   },
   {
-    title: 'Wellness', // Changed from Movement
+    title: 'Wellness',
     href: '/movement',
-    icon: Activity,    // Changed from Dumbbell
+    icon: Activity,
     matchSegments: 1,
   },
   {

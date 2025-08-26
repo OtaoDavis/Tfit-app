@@ -41,6 +41,10 @@ export interface MealDiaryEntry {
    * The timestamp when the meal was scanned.
    */
   timestamp: Date;
+  /**
+   * Optional user-provided notes for the meal.
+   */
+  notes?: string;
 }
 
 /**
@@ -54,6 +58,7 @@ interface MealScanResult {
   protein: number;
   carbohydrates: number;
   fat: number;
+  notes?: string;
 }
 
 
@@ -61,9 +66,10 @@ interface MealScanResult {
  * Simulates scanning a meal image and returning nutritional information.
  * @param imageBase64 - The base64 encoded image data URI (not used in mock for analysis, but required for the flow).
  * @param mealType - The type of meal being scanned (e.g., "Breakfast").
+ * @param notes - Optional notes from the user about the meal.
  * @returns A promise that resolves with estimated nutritional info.
  */
-export async function scanMeal(imageBase64: string, mealType: MealType): Promise<MealScanResult> {
+export async function scanMeal(imageBase64: string, mealType: MealType, notes?: string): Promise<MealScanResult> {
   // Simulate network delay or AI processing time
   await new Promise(resolve => setTimeout(resolve, 1500));
 
@@ -76,11 +82,12 @@ export async function scanMeal(imageBase64: string, mealType: MealType): Promise
 
   // Return the nutritional data along with a mock name and the provided mealType.
   return {
-    name: `${mealType}`, // A more descriptive mock name
+    name: `Scanned ${mealType}`, // A more descriptive mock name
     mealType: mealType,
     calories: Math.floor(Math.random() * 400) + 100, // Random calories (100-499)
     protein: Math.floor(Math.random() * 30) + 5,   // Random protein (5-34g)
     carbohydrates: Math.floor(Math.random() * 50) + 10, // Random carbs (10-59g)
     fat: Math.floor(Math.random() * 20) + 5,       // Random fat (5-24g)
+    notes: notes,
   };
 }

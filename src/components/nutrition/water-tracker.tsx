@@ -4,18 +4,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Minus, Plus, Droplet, Edit3, History, GlassWater } from 'lucide-react';
+import { Minus, Plus, Droplet, Edit3, History, GlassWater, ChevronDown, ChevronUp, Calendar as CalendarIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
-import { format, parseISO, startOfDay } from 'date-fns';
+import { format, parseISO, startOfDay, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
+import { Calendar } from '../ui/calendar';
+import { Progress } from '../ui/progress';
 
 const DEFAULT_GOAL_ML = 2000;
 const GLASS_SIZE_ML = 250;
@@ -30,12 +27,19 @@ interface WaterLogEntry {
   goalMl: number;
 }
 
-export function WaterTracker() {
+interface WaterTrackerProps {
+  isHistoryVisible: boolean;
+  onToggleHistory: () => void;
+}
+
+export function WaterTracker({ isHistoryVisible, onToggleHistory }: WaterTrackerProps) {
   const [waterLog, setWaterLog] = useState<WaterLogEntry[]>([]);
   const [dailyGoalMl, setDailyGoalMl] = useState(DEFAULT_GOAL_ML); // User's current preferred goal
   const [isMounted, setIsMounted] = useState(false);
   const [customAmount, setCustomAmount] = useState<string>(GLASS_SIZE_ML.toString());
   const [newGoalInput, setNewGoalInput] = useState<string>(dailyGoalMl.toString());
+  const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
+
 
   const getTodayDateString = useCallback(() => {
     return format(startOfDay(new Date()), 'yyyy-MM-dd');
@@ -136,13 +140,14 @@ export function WaterTracker() {
     }
   };
 
-  const getTodaysData = (): WaterLogEntry => {
-    const todayStr = getTodayDateString();
-    const todayData = waterLog.find(entry => entry.date === todayStr);
-    return todayData || { date: todayStr, intakeMl: 0, goalMl: dailyGoalMl };
+  const getDataForDate = (date: Date): WaterLogEntry => {
+    const dateStr = format(startOfDay(date), 'yyyy-MM-dd');
+    const data = waterLog.find(entry => entry.date === dateStr);
+    return data || { date: dateStr, intakeMl: 0, goalMl: dailyGoalMl };
   };
 
-  const todayData = getTodaysData();
+  const todayData = getDataForDate(new Date());
+  const selectedDateData = getDataForDate(selectedDate);
   const progressPercentage = todayData.goalMl > 0 ? (todayData.intakeMl / todayData.goalMl) * 100 : 0;
   
   const amountPerGlass = todayData.goalMl / NUMBER_OF_GLASSES;
@@ -165,8 +170,51 @@ export function WaterTracker() {
     );
   }
 
+  const HistoryView = () => (
+    <div className="space-y-4">
+      <Popover>
+          <PopoverTrigger asChild>
+              <Button
+                  variant={"outline"}
+                  className={cn(
+                      "w-full sm:w-[280px] justify-start text-left font-normal",
+                      !selectedDate && "text-muted-foreground"
+                  )}
+              >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {selectedDate ? format(selectedDate, "PPP") : <span>Pick a date</span>}
+              </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+              <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(date) => setSelectedDate(date || startOfDay(new Date()))}
+                  initialFocus
+              />
+          </PopoverContent>
+      </Popover>
+      <Card className="shadow-md">
+        <CardContent className="pt-6 text-center">
+            {selectedDateData.intakeMl > 0 || isSameDay(selectedDate, startOfDay(new Date())) ? (
+                <>
+                    <p className="text-2xl font-bold text-primary">{selectedDateData.intakeMl.toLocaleString()} ml</p>
+                    <p className="text-sm text-muted-foreground">
+                      Goal: {selectedDateData.goalMl.toLocaleString()} ml
+                    </p>
+                     <Progress value={(selectedDateData.intakeMl / selectedDateData.goalMl) * 100} className="w-full h-3 mt-2" />
+                </>
+            ) : (
+                <p className="text-muted-foreground">No water logged for {format(selectedDate, "MMMM d, yyyy")}.</p>
+            )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+
   return (
     <>
+      <h2 className="text-2xl font-semibold mb-4 text-foreground">Water Tracker</h2>
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -279,42 +327,16 @@ export function WaterTracker() {
         </CardFooter>
       </Card>
 
-      {waterLog.length > 1 && ( // Only show history if there's more than just today
-        <section id="water-history" className="mt-8">
-          <h3 className="text-xl font-semibold mb-4 text-foreground flex items-center gap-2">
-            <History className="h-5 w-5 text-primary" />
-            Water Intake History
-          </h3>
-          {waterLog.filter(entry => entry.date !== getTodayDateString()).length === 0 ? (
-             <Card className="shadow-md">
-                <CardContent className="pt-6 text-center text-muted-foreground">
-                    No past history yet. Keep tracking!
-                </CardContent>
-             </Card>
-          ) : (
-            <Accordion type="multiple" className="w-full space-y-2">
-              {waterLog
-                .filter(entry => entry.date !== getTodayDateString()) // Exclude today from history list
-                .map(entry => (
-                <AccordionItem value={entry.date} key={entry.date} className="border-b-0 rounded-lg overflow-hidden shadow-md bg-card">
-                  <AccordionTrigger className="px-4 py-3 hover:bg-muted/50 text-base font-medium">
-                    {format(parseISO(entry.date), "MMMM d, yyyy (eeee)")}
-                  </AccordionTrigger>
-                  <AccordionContent>
-                    <div className="p-4 border-t bg-background text-sm">
-                      <p>Intake: <span className="font-semibold">{entry.intakeMl} ml</span></p>
-                      <p>Goal: <span className="font-semibold">{entry.goalMl} ml</span></p>
-                      <div className="w-full bg-secondary rounded-full h-2.5 mt-2">
-                          <div className="bg-primary h-2.5 rounded-full" style={{ width: `${(entry.intakeMl / entry.goalMl) * 100}%` }}></div>
-                      </div>
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              ))}
-            </Accordion>
-          )}
-        </section>
-      )}
+      <section id="water-history" className="mt-8">
+        <div className="flex justify-between items-center mb-4">
+            <h3 className="text-2xl font-semibold text-foreground">History</h3>
+            <Button variant="ghost" onClick={onToggleHistory} className="flex items-center gap-1">
+                {isHistoryVisible ? 'Hide History' : 'View History'}
+                {isHistoryVisible ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+            </Button>
+        </div>
+        {isHistoryVisible && <HistoryView />}
+      </section>
     </>
   );
 }

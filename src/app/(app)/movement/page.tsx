@@ -15,7 +15,6 @@ export default function MovementPage() {
         <StepsTracker />
         <SleepTracker />
         <StressTracker />
-        <HabitTracker />
       </div>
     </div>
   );
