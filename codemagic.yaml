@@ -6,7 +6,7 @@ workflows:
       groups:
         - firebase
       ios_signing:
-        distribution_type: app-store
+        distribution_type: app_store
         bundle_identifier: com.treasurefitness.com
 
     integrations:
