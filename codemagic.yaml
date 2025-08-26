@@ -5,6 +5,9 @@ workflows:
       xcode: latest
       groups:
         - firebase
+      ios_signing:
+        distribution_type: app-store
+        bundle_identifier: com.treasurefitness.com
 
     integrations:
       app_store_connect: App Store API 
@@ -22,23 +25,19 @@ workflows:
 
       - name: Build and export IPA
         script: |
-          # This script uses automatic code signing
-          set -x # To print executed commands
-
-          # Define the archive path
+          set -x
+          
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
-
-          # Archive the project with automatic signing and team ID
+          
+          # Let Codemagic handle all the signing automatically
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
             -allowProvisioningUpdates \
-            DEVELOPMENT_TEAM="X3L24943PL" \
             archive
 
-          # Export the archive into an IPA
           xcodebuild -exportArchive \
             -archivePath "${XCARCHIVE_PATH}" \
             -exportPath "${CM_BUILD_DIR}/build/ios/ipa" \
