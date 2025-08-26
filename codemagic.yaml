@@ -1,24 +1,15 @@
 workflows:
-  ios-manual-signing:
-    name: iOS Manual Signing Build
+  ios-automatic-signing:
+    name: iOS Automatic Signing Build
     environment:
       xcode: latest
       groups:
         - firebase
-      vars:
-        BUNDLE_ID: "com.treasurefitness.com"
-        APPLE_DEVELOPER_TEAM_ID: "X3L24943PL"
-        
+
     integrations:
-      app_store_connect: App Store API
+      app_store_connect: App Store API 
 
     scripts:
-      - name: Set up provisioning profiles
-        script: |
-          # Download and install certificates and provisioning profiles
-          # This assumes you've uploaded them to Codemagic
-          echo "Setting up code signing..."
-          
       - name: Install dependencies
         script: |
           npm ci
@@ -31,25 +22,35 @@ workflows:
 
       - name: Build and export IPA
         script: |
-          set -x
-          
+          # This script uses automatic code signing
+          set -x # To print executed commands
+
+          # Define the archive path
           XCARCHIVE_PATH="${CM_BUILD_DIR}/App.xcarchive"
-          
-          # Manual code signing
+
+          # Archive the project with automatic signing and team ID
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Release \
             -sdk iphoneos \
             -archivePath "${XCARCHIVE_PATH}" \
-            CODE_SIGN_IDENTITY="iPhone Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="YourProvisioningProfileName" \
-            DEVELOPMENT_TEAM="${APPLE_DEVELOPER_TEAM_ID}" \
+            -allowProvisioningUpdates \
+            DEVELOPMENT_TEAM="X3L24943PL" \
             archive
 
+          # Export the archive into an IPA
           xcodebuild -exportArchive \
             -archivePath "${XCARCHIVE_PATH}" \
             -exportPath "${CM_BUILD_DIR}/build/ios/ipa" \
-            -exportOptionsPlist "ExportOptions.plist"
+            -exportOptionsPlist "ExportOptions.plist"   
 
     artifacts:
-      - build/ios/ipa/*.ipa
+      - build/ios/ipa/*.ipa 
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.dSYM
+
+    publishing:
+      app_store_connect:
+        # Optional: automatically upload to TestFlight
+        submit_to_testflight: false
