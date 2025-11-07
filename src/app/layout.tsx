@@ -19,7 +19,6 @@ export const metadata: Metadata = {
     icon: '/tf_head.png', 
     apple: '/tf_head.png', 
   },
-  manifest: '/site.webmanifest',
 };
 
 export default function RootLayout({
