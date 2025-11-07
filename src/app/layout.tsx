@@ -30,7 +30,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/site.webmanifest" />
       </head>
       <body className={`${quicksand.variable} font-sans antialiased`}>
         <ThemeProvider
